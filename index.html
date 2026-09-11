@@ -663,6 +663,7 @@ const ghosts = [
         dx: 0,
         dy: -1.5,
         mode: 'chase',
+        inHouse: true,
         homeX: 9,
         homeY: 9
     },
@@ -671,9 +672,10 @@ const ghosts = [
         x: 9 * tileSize + tileSize / 2,
         y: 10 * tileSize + tileSize / 2,
         color: '#ec4899',
-        dx: 1.5,
-        dy: 0,
+        dx: 0,
+        dy: -1.5,
         mode: 'chase',
+        inHouse: true,
         homeX: 9,
         homeY: 10
     },
@@ -682,9 +684,10 @@ const ghosts = [
         x: 8 * tileSize + tileSize / 2,
         y: 10 * tileSize + tileSize / 2,
         color: '#00f2fe',
-        dx: -1.5,
-        dy: 0,
+        dx: 0,
+        dy: -1.5,
         mode: 'chase',
+        inHouse: true,
         homeX: 8,
         homeY: 10
     },
@@ -694,14 +697,14 @@ const ghosts = [
         y: 10 * tileSize + tileSize / 2,
         color: '#fb923c',
         dx: 0,
-        dy: 1.5,
+        dy: -1.5,
         mode: 'chase',
+        inHouse: true,
         homeX: 10,
         homeY: 10
     }
 
 ];
-
 
 /* =========================================================
    LOCAL STORAGE
@@ -834,24 +837,23 @@ function resetPositions() {
 ];
     ghosts.forEach((ghost, index) => {
 
-        const start = starts[index];
+    const start = starts[index];
 
-        ghost.x =
-            start.x * tileSize +
-            tileSize / 2;
+    ghost.x =
+        start.x * tileSize +
+        tileSize / 2;
 
-        ghost.y =
-            start.y * tileSize +
-            tileSize / 2;
+    ghost.y =
+        start.y * tileSize +
+        tileSize / 2;
 
-        ghost.dx = start.dx;
-        ghost.dy = start.dy;
+    ghost.dx = 0;
+    ghost.dy = -1.5;
 
-        ghost.mode = 'chase';
-    });
+    ghost.mode = 'chase';
 
-    powerTimer = 0;
-}
+    ghost.inHouse = true;
+});
 
 
 /* =========================================================
@@ -1436,70 +1438,89 @@ function updateGhost(ghost) {
 
     /*
      * =====================================================
-     * SAÍDA DA CASA DOS FANTASMAS
+     * SAÍDA DA CASA
      * =====================================================
      *
-     * Enquanto estiver dentro da região da casa,
-     * o fantasma primeiro procura chegar ao corredor
-     * central e depois começa a IA normal.
+     * A casa fica aproximadamente entre:
+     *
+     * colunas 7–11
+     * linhas 8–10
+     *
+     * A coluna 9 possui uma parede acima da saída.
+     *
+     * Portanto:
+     *
+     *        ↑
+     *       8/10
+     *        ↑
+     *       9
+     *
+     * O fantasma primeiro sobe para a linha 8,
+     * depois vai para a coluna 8 ou 10,
+     * e então sobe para o corredor.
      */
 
-    const tile = getTileFromCenter(ghost.x, ghost.y);
+    if (ghost.mode === 'chase' && ghost.inHouse) {
 
-    if (tile) {
+        /*
+         * Primeiro: subir até a linha 8.
+         */
 
-        const insideGhostHouse =
-            tile.r >= 8 &&
-            tile.r <= 12 &&
-            tile.c >= 7 &&
-            tile.c <= 11;
+        const houseRow =
+            Math.floor(
+                ghost.y / tileSize
+            );
 
-        if (insideGhostHouse && ghost.mode !== 'scared') {
+        const houseCol =
+            Math.floor(
+                ghost.x / tileSize
+            );
 
-            /*
-             * Objetivo: sair pela abertura central.
-             *
-             * A abertura fica aproximadamente em:
-             * coluna 9 / linha 8
-             */
+        /*
+         * Se ainda estiver na parte inferior
+         * da casa, sobe.
+         */
+
+        if (houseRow >= 9) {
+
+            const nextY =
+                ghost.y - speed;
+
+            if (
+                canMove(
+                    ghost.x,
+                    nextY,
+                    5
+                )
+            ) {
+
+                ghost.dx = 0;
+                ghost.dy = -speed;
+
+                ghost.y = nextY;
+
+                return;
+            }
+        }
+
+        /*
+         * =================================================
+         * ESCOLHER UM DOS DOIS LADOS DA SAÍDA
+         * =================================================
+         */
+
+        /*
+         * Se estiver na coluna 9,
+         * escolhe a coluna 8.
+         */
+
+        if (houseCol === 9) {
+
+            const targetCol = 8;
 
             const targetX =
-                9 * tileSize + tileSize / 2;
-
-            const targetY =
-                7 * tileSize + tileSize / 2;
-
-            /*
-             * Se estiver abaixo do centro,
-             * sobe primeiro.
-             */
-
-            if (ghost.y > targetY + 2) {
-
-                const nextY =
-                    ghost.y - speed;
-
-                if (
-                    canMove(
-                        ghost.x,
-                        nextY,
-                        5
-                    )
-                ) {
-
-                    ghost.dx = 0;
-                    ghost.dy = -speed;
-
-                    ghost.y = nextY;
-
-                    return;
-                }
-            }
-
-            /*
-             * Se precisar alinhar horizontalmente,
-             * vai para a coluna central.
-             */
+                targetCol * tileSize +
+                tileSize / 2;
 
             if (
                 Math.abs(
@@ -1535,7 +1556,61 @@ function updateGhost(ghost) {
                 }
             }
         }
+
+        /*
+         * =================================================
+         * SUBIR PELA COLUNA 8
+         * =================================================
+         */
+
+        if (
+            houseCol === 8 ||
+            houseCol === 10
+        ) {
+
+            const nextY =
+                ghost.y - speed;
+
+            if (
+                canMove(
+                    ghost.x,
+                    nextY,
+                    5
+                )
+            ) {
+
+                ghost.dx = 0;
+                ghost.dy = -speed;
+
+                ghost.y = nextY;
+
+                return;
+            }
+        }
+
+        /*
+         * =================================================
+         * SAIU DA CASA
+         * =================================================
+         */
+
+        if (
+            houseRow <= 7
+        ) {
+
+            ghost.inHouse = false;
+
+            /*
+             * Direção inicial para cima.
+             */
+
+            ghost.dx = 0;
+            ghost.dy = -speed;
+
+            return;
+        }
     }
+
 
     /*
      * =====================================================
@@ -1556,8 +1631,9 @@ function updateGhost(ghost) {
         chooseGhostDirection(ghost);
     }
 
+
     /*
-     * Movimento
+     * Movimento normal
      */
 
     const nextX =
@@ -1565,6 +1641,7 @@ function updateGhost(ghost) {
 
     const nextY =
         ghost.y + ghost.dy;
+
 
     if (
         canMove(
@@ -1580,17 +1657,13 @@ function updateGhost(ghost) {
     } else {
 
         /*
-         * Bateu na parede.
-         * Recalcula imediatamente.
+         * Parede:
+         * escolhe outra direção.
          */
 
         snapToGrid(ghost);
 
         chooseGhostDirection(ghost);
-
-        /*
-         * Tenta novamente.
-         */
 
         const retryX =
             ghost.x + ghost.dx;
@@ -1612,8 +1685,7 @@ function updateGhost(ghost) {
         } else {
 
             /*
-             * Fallback extremamente seguro:
-             * procura qualquer direção disponível.
+             * Último fallback.
              */
 
             const directions = [
@@ -1623,7 +1695,9 @@ function updateGhost(ghost) {
                 { dx: 0, dy: -1 }
             ];
 
-            for (const direction of directions) {
+            for (
+                const direction of directions
+            ) {
 
                 if (
                     canMove(
@@ -1643,14 +1717,12 @@ function updateGhost(ghost) {
                     ghost.dy =
                         direction.dy * speed;
 
-                    ghost.x += ghost.dx;
-                    ghost.y += ghost.dy;
-
                     break;
                 }
             }
         }
     }
+
 
     /*
      * =====================================================
