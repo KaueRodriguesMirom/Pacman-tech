@@ -934,27 +934,27 @@ function createGhosts() {
 
     ghosts =
         ghostDefinitions.map(
-            (definition,index) => {
+            (definition, index) => {
+
+                const position =
+                    tileCenter(
+                        definition.startX,
+                        definition.startY
+                    );
 
                 return {
 
-                    x:
-                        definition.startX *
-                        TILE +
-                        TILE/2,
+                    x: position.x,
 
-                    y:
-                        definition.startY *
-                        TILE +
-                        TILE/2,
+                    y: position.y,
 
                     color:
                         definition.color,
 
-                    dir:
-                        index === 0
-                            ? {...DIR.UP}
-                            : {...DIR.DOWN},
+                    dir: {
+                        x: 0,
+                        y: -1
+                    },
 
                     mode:
                         'house',
@@ -965,14 +965,8 @@ function createGhosts() {
                     startY:
                         definition.startY,
 
-                    targetX:
-                        9,
-
-                    targetY:
-                        1,
-
                     houseTimer:
-                        index * 700
+                        definition.delay
 
                 };
 
@@ -2036,51 +2030,63 @@ function updateGhostHouse(
     dt
 ) {
 
-    ghost.houseTimer -=
-        dt;
-
-
+    /*
+     * Aguarda o momento de sair.
+     */
     if (
-        ghost.houseTimer >
-        0
+        ghost.houseTimer > 0
     ) {
 
-        /*
-         * Pequena animação vertical
-         * dentro da casa.
-         */
+        ghost.houseTimer -= dt;
 
-        const baseY =
-            ghost.startY *
-            TILE +
-            TILE/2;
+        /*
+         * Animação suave dentro da casa.
+         */
+        const base =
+            tileCenter(
+                9,
+                9
+            );
+
+        ghost.x =
+            base.x +
+            Math.sin(
+                performance.now() * 0.004 +
+                ghost.color.length
+            ) * 3;
 
         ghost.y =
-            baseY +
-            Math.sin(
-                performance.now() *
-                .004 +
-                ghost.startX
+            base.y -
+            Math.abs(
+                Math.sin(
+                    performance.now() * 0.004 +
+                    ghost.color.length
+                )
             ) * 2;
 
-        return true;
+        return;
 
     }
 
 
-    const target =
+    /*
+     * SAÍDA DA CASA
+     *
+     * Primeiro sobe de (9,9)
+     * para (9,8).
+     */
+    const exit =
         tileCenter(
             9,
             8
         );
 
-
     const dx =
-        target.x -
+        exit.x -
         ghost.x;
 
     const dy =
-        target.y -
+        exit.y -
         ghost.y;
 
     const distance =
@@ -2090,46 +2096,94 @@ function updateGhostHouse(
         );
 
 
+    /*
+     * Velocidade controlada
+     */
+    const speed =
+        1.35 * dt;
+
+
     if (
-        distance > 1
+        distance > 0.5
     ) {
 
-        const speed =
-            2.0 *
-            dt;
+        const move =
+            Math.min(
+                speed,
+                distance
+            );
 
         ghost.x +=
             (dx / distance) *
-            speed;
+            move;
 
         ghost.y +=
             (dy / distance) *
-            speed;
+            move;
 
-        return true;
+        return;
 
     }
 
 
+    /*
+     * Chegou à saída.
+     */
     ghost.x =
-        target.x;
+        exit.x;
 
     ghost.y =
-        target.y;
+        exit.y;
 
-    ghost.dir =
-        {...DIR.UP};
+
+    /*
+     * NÃO manda para cima.
+     *
+     * A partir de (9,8), as saídas
+     * válidas são esquerda e direita.
+     */
+
+    const possibleDirections = [
+
+        DIR.LEFT,
+        DIR.RIGHT
+
+    ].filter(
+        dir =>
+            canGoFromTile(
+                9,
+                8,
+                dir
+            )
+    );
+
+
+    if (
+        possibleDirections.length
+    ) {
+
+        /*
+         * Cada fantasma pode sair
+         * para um lado diferente.
+         */
+        const chosen =
+            possibleDirections[
+                ghosts.indexOf(ghost) %
+                possibleDirections.length
+            ];
+
+        ghost.dir = {
+            ...chosen
+        };
+
+    }
 
     ghost.mode =
         powerTimer > 0
             ? 'scared'
             : 'chase';
 
-    return false;
-
 }
-
-
 /* =========================================================
    UPDATE FANTASMA
 ========================================================= */
@@ -2165,19 +2219,12 @@ function updateGhost(
      */
 
     const speed =
-        (
-            ghost.mode ===
-            'scared'
-
-                ? 1.75
-
-                : 2.15 +
-                  Math.min(
-                      level - 1,
-                      5
-                  ) * .12
-
-        ) * dt;
+    (
+        ghost.mode === 'scared'
+            ? 1.45
+            : 1.65 +
+              Math.min(level - 1, 5) * 0.06
+    ) * dt;
 
 
     /*
@@ -2192,7 +2239,7 @@ function updateGhost(
     if (
         nearCenter(
             ghost,
-            5.5
+            2.5
         )
     ) {
 
@@ -2242,7 +2289,7 @@ function updateGhost(
 
             }
 
-
+            snapCenter(ghost);
             /*
              * Escolhe imediatamente
              * a próxima direção.
