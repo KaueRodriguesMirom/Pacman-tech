@@ -32,99 +32,102 @@
             touch-action: none;
             user-select: none;
             -webkit-user-select: none;
+            -webkit-touch-callout: none;
         }
         .arcade-glow {
-            box-shadow: 0 0 30px rgba(0, 242, 254, 0.2), inset 0 0 20px rgba(0, 242, 254, 0.08);
+            box-shadow: 0 0 25px rgba(0, 242, 254, 0.25), inset 0 0 15px rgba(0, 242, 254, 0.08);
         }
         .text-glow {
             text-shadow: 0 0 10px rgba(0, 242, 254, 0.8);
         }
         ::-webkit-scrollbar {
-            width: 6px;
+            width: 4px;
         }
         ::-webkit-scrollbar-track {
             background: #030309;
         }
         ::-webkit-scrollbar-thumb {
             background: #00f2fe;
-            border-radius: 3px;
+            border-radius: 2px;
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center justify-between p-2 sm:p-4 overflow-x-hidden">
 
-    <header class="w-full max-w-4xl flex flex-col sm:flex-row items-center justify-between bg-arcadePanel border border-[#00f2fe]/40 rounded-2xl p-3 sm:p-4 shadow-xl mb-2 gap-3">
-        <div class="flex items-center gap-3">
-            <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/50 animate-pulse">
-                <span class="text-white font-arcade text-base sm:text-lg">P</span>
+    <header class="w-full max-w-md flex flex-col items-center bg-arcadePanel border border-[#00f2fe]/40 rounded-2xl p-3 shadow-xl mb-2 gap-2.5">
+        <div class="flex items-center gap-3 w-full justify-between">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/50">
+                    <span class="text-white font-arcade text-sm">P</span>
+                </div>
+                <div>
+                    <h1 class="font-arcade text-xs text-cyan-400 text-glow tracking-wider">PAC-MAN TECH</h1>
+                    <p class="text-[9px] text-cyan-300/70">Grid Cibernetico v3.3</p>
+                </div>
             </div>
-            <div>
-                <h1 class="font-arcade text-xs sm:text-lg text-cyan-400 text-glow tracking-wider">PAC-MAN TECH</h1>
-                <p class="text-[10px] sm:text-xs text-cyan-300/70">Grid Cibernetico v3.1</p>
-            </div>
-        </div>
 
-        <div class="flex items-center gap-4 sm:gap-6 bg-arcadeDark px-4 sm:px-5 py-2 rounded-xl border border-[#00f2fe]/30">
-            <div class="text-center">
-                <div class="text-[8px] sm:text-[9px] uppercase font-semibold text-cyan-400 font-arcade">Pontos</div>
-                <div id="scoreDisplay" class="font-arcade text-xs sm:text-base text-white">0</div>
-            </div>
-            <div class="w-[1px] h-6 sm:h-8 bg-cyan-500/30"></div>
-            <div class="text-center">
-                <div class="text-[8px] sm:text-[9px] uppercase font-semibold text-cyan-400 font-arcade">Recorde</div>
-                <div id="highScoreDisplay" class="font-arcade text-xs sm:text-base text-teal-300">0</div>
-            </div>
-            <div class="w-[1px] h-6 sm:h-8 bg-cyan-500/30"></div>
-            <div class="text-center">
-                <div class="text-[8px] sm:text-[9px] uppercase font-semibold text-cyan-400 font-arcade">Vidas</div>
-                <div id="livesDisplay" class="flex items-center gap-1 mt-1 justify-center"></div>
+            <div class="flex items-center gap-2 bg-arcadeDark px-3 py-1.5 rounded-xl border border-[#00f2fe]/30">
+                <div class="text-center">
+                    <div class="text-[7px] uppercase font-semibold text-cyan-400 font-arcade">Pontos</div>
+                    <div id="scoreDisplay" class="font-arcade text-xs text-white">0</div>
+                </div>
+                <div class="w-[1px] h-6 bg-cyan-500/30"></div>
+                <div class="text-center">
+                    <div class="text-[7px] uppercase font-semibold text-cyan-400 font-arcade">Recorde</div>
+                    <div id="highScoreDisplay" class="font-arcade text-xs text-teal-300">0</div>
+                </div>
+                <div class="w-[1px] h-6 bg-cyan-500/30"></div>
+                <div class="text-center">
+                    <div class="text-[7px] uppercase font-semibold text-cyan-400 font-arcade">Vidas</div>
+                    <div id="livesDisplay" class="flex items-center gap-1 mt-0.5 justify-center"></div>
+                </div>
             </div>
         </div>
     </header>
 
-    <main class="w-full max-w-4xl flex flex-col items-center relative flex-grow justify-center my-1">
-        <div id="messageOverlay" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/85 backdrop-blur-md rounded-2xl transition-all duration-300">
-            <div class="bg-arcadePanel border-2 border-[#00f2fe] p-5 sm:p-8 rounded-2xl shadow-2xl flex flex-col items-center text-center max-w-sm sm:max-w-md arcade-glow mx-4">
-                <h2 id="overlayTitle" class="font-arcade text-lg sm:text-2xl text-cyan-400 mb-3 text-glow">PAC-MAN TECH</h2>
-                <p id="overlayText" class="text-slate-300 text-xs sm:text-base mb-6 leading-relaxed">
+    <main class="w-full max-w-md flex flex-col items-center relative flex-grow justify-center my-1">
+        <div id="messageOverlay" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md rounded-2xl transition-all duration-300">
+            <div class="bg-arcadePanel border-2 border-[#00f2fe] p-5 rounded-2xl shadow-2xl flex flex-col items-center text-center max-w-xs arcade-glow mx-4">
+                <h2 id="overlayTitle" class="font-arcade text-base text-cyan-400 mb-2.5 text-glow">PAC-MAN TECH</h2>
+                <p id="overlayText" class="text-slate-300 text-xs mb-5 leading-relaxed">
                     Navegue pelo grid cibernetico, colete os nodes de dados e desvie dos firewalls maliciosos!
                 </p>
-                <button id="startButton" class="w-full py-3.5 px-6 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-arcade text-xs sm:text-sm rounded-xl shadow-lg shadow-cyan-500/40 transform transition active:scale-95 cursor-pointer">
+                <button id="startButton" class="w-full py-3 px-5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-arcade text-xs rounded-xl shadow-lg shadow-cyan-500/40 transform transition active:scale-95 cursor-pointer">
                     INICIALIZAR SISTEMA
                 </button>
             </div>
         </div>
 
-        <div class="relative bg-arcadeDark border-2 border-[#00f2fe]/60 rounded-2xl p-1.5 sm:p-3 shadow-2xl arcade-glow flex items-center justify-center">
+        <div class="relative bg-arcadeDark border-2 border-[#00f2fe]/60 rounded-2xl p-1 shadow-2xl arcade-glow flex items-center justify-center">
             <canvas id="gameCanvas" class="rounded-xl block max-w-full h-auto"></canvas>
         </div>
     </main>
 
-    <footer class="w-full max-w-4xl mt-2 flex flex-col items-center justify-between gap-2 bg-arcadePanel border border-[#00f2fe]/40 rounded-2xl p-2.5 text-xs text-slate-400">
+    <footer class="w-full max-w-md mt-2 flex flex-col items-center justify-between gap-2 bg-arcadePanel border border-[#00f2fe]/40 rounded-2xl p-2.5 text-xs text-slate-400">
         
-        <!-- D-Pad otimizado e visÃ­vel para toque em smartphones -->
-        <div class="flex flex-col items-center justify-center w-full my-1 sm:hidden">
-            <div class="text-[9px] font-arcade text-cyan-400 mb-1 uppercase tracking-wider">Controles Direcionais</div>
-            <div class="grid grid-cols-3 gap-2 w-48 max-w-full">
-                <div></div>
-                <button id="btnUp" class="h-12 bg-arcadeDark border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center active:bg-cyan-500 active:text-black text-2xl font-bold shadow-md shadow-cyan-500/30">â²</button>
-                <div></div>
-                <button id="btnLeft" class="h-12 bg-arcadeDark border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center active:bg-cyan-500 active:text-black text-2xl font-bold shadow-md shadow-cyan-500/30">â</button>
-                <button id="btnDown" class="h-12 bg-arcadeDark border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center active:bg-cyan-500 active:text-black text-2xl font-bold shadow-md shadow-cyan-500/30">â¼</button>
-                <button id="btnRight" class="h-12 bg-arcadeDark border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center active:bg-cyan-500 active:text-black text-2xl font-bold shadow-md shadow-cyan-500/30">â¶</button>
+        <!-- D-Pad Direcional Otimizado e Robusto -->
+        <div class="flex flex-col items-center justify-center w-full my-1">
+            <div class="text-[8px] font-arcade text-cyan-400 mb-1.5 uppercase tracking-wider">Controles Direcionais</div>
+            
+            <div class="flex flex-col items-center w-full gap-1.5">
+                <!-- BotÃ£o Cima -->
+                <button id="btnUp" class="w-16 h-11 bg-arcadeDark border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center active:bg-cyan-500 active:text-black text-xl font-bold shadow-md shadow-cyan-500/30 cursor-pointer">â²</button>
+                
+                <!-- BotÃµes Esquerda, Baixo, Direita -->
+                <div class="flex items-center justify-center gap-6 w-full">
+                    <button id="btnLeft" class="w-20 h-11 bg-arcadeDark border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center active:bg-cyan-500 active:text-black text-xl font-bold shadow-md shadow-cyan-500/30 cursor-pointer">â</button>
+                    <button id="btnDown" class="w-16 h-11 bg-arcadeDark border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center active:bg-cyan-500 active:text-black text-xl font-bold shadow-md shadow-cyan-500/30 cursor-pointer">â¼</button>
+                    <button id="btnRight" class="w-20 h-11 bg-arcadeDark border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center active:bg-cyan-500 active:text-black text-xl font-bold shadow-md shadow-cyan-500/30 cursor-pointer">â¶</button>
+                </div>
             </div>
         </div>
 
-        <div class="w-full flex flex-row items-center justify-between px-2">
-            <div class="hidden sm:flex items-center gap-3">
-                <span class="flex items-center gap-1"><kbd class="px-2 py-1 bg-arcadeDark border border-cyan-500/40 rounded text-cyan-300 font-arcade text-[10px]">W A SD</kbd> ou <kbd class="px-2 py-1 bg-arcadeDark border border-cyan-500/40 rounded text-cyan-300 font-arcade text-[10px]">Setas</kbd></span>
-                <span class="flex items-center gap-1"><kbd class="px-2 py-1 bg-arcadeDark border border-cyan-500/40 rounded text-cyan-300 font-arcade text-[10px]">ESC</kbd> Pausar</span>
+        <div class="w-full flex items-center justify-between px-1 pt-1 border-t border-cyan-500/20">
+            <div class="flex items-center gap-2">
+                <button id="pauseButton" class="px-3 py-1.5 bg-arcadeDark hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition cursor-pointer text-[11px]">Pausar</button>
+                <button id="soundButton" class="px-3 py-1.5 bg-arcadeDark hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition cursor-pointer text-[11px]">ð Som: ON</button>
             </div>
-
-            <div class="flex items-center gap-2 w-full sm:w-auto justify-center">
-                <button id="pauseButton" class="px-4 py-2 bg-arcadeDark hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition cursor-pointer text-xs">Pausar</button>
-                <button id="soundButton" class="px-4 py-2 bg-arcadeDark hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition cursor-pointer text-xs">ð Som: ON</button>
-            </div>
+            <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v3.3</div>
         </div>
     </footer>
 
@@ -226,7 +229,6 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Mapa Tech Futurista: 1 = Barreira Cyber, 0 = Data Node, 2 = Caminho Livre, 3 = Core Booster, 4 = Porta Firewall
         const initialMap = [
             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
             [1,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,3,1],
@@ -252,7 +254,7 @@
         ];
 
         let map = [];
-        const tileSize = 24;
+        const tileSize = 20;
         const cols = initialMap[0].length;
         const rows = initialMap.length;
 
@@ -333,12 +335,12 @@
             livesContainer.innerHTML = '';
             for (let i = 0; i < lives; i++) {
                 const lifeIcon = document.createElement('div');
-                lifeIcon.className = 'w-3 h-3 rounded bg-cyan-400 shadow-sm shadow-cyan-500/50';
+                lifeIcon.className = 'w-2.5 h-2.5 rounded bg-cyan-400 shadow-sm shadow-cyan-500/50';
                 livesContainer.appendChild(lifeIcon);
             }
         }
 
-        function isWall(pixelX, pixelY, radius = 6) {
+        function isWall(pixelX, pixelY, radius = 5) {
             const corners = [
                 { x: pixelX - radius, y: pixelY - radius },
                 { x: pixelX + radius, y: pixelY - radius },
@@ -372,7 +374,7 @@
                 }
             }
 
-            // MovimentaÃ§Ã£o alinhada ao grid
+            // Checagem exata no grid para mudanÃ§a contÃ­nua de direÃ§Ã£o sem travamento
             if (pacman.x % tileSize === 0 && pacman.y % tileSize === 0) {
                 const currentTile = getTile(pacman.x, pacman.y);
                 
@@ -399,23 +401,29 @@
                     }
                 }
 
-                // Tenta aplicar a prÃ³xima direÃ§Ã£o solicitada
+                // Tenta virar para a prÃ³xima direÃ§Ã£o desejada imediatamente se houver caminho livre
                 if (pacman.nextDx !== 0 || pacman.nextDy !== 0) {
-                    if (!isWall(pacman.x + pacman.nextDx * 4, pacman.y + pacman.nextDy * 4, 8)) {
+                    if (!isWall(pacman.x + pacman.nextDx * 4, pacman.y + pacman.nextDy * 4, 7)) {
                         pacman.dx = pacman.nextDx;
                         pacman.dy = pacman.nextDy;
                     }
                 }
-                if (isWall(pacman.x + pacman.dx * 4, pacman.y + pacman.dy * 4, 8)) {
+                // Para se bater em parede na direÃ§Ã£o atual
+                if (isWall(pacman.x + pacman.dx * 4, pacman.y + pacman.dy * 4, 7)) {
                     pacman.dx = 0;
                     pacman.dy = 0;
+                }
+            } else {
+                // Permite inversÃ£o instantÃ¢nea de direÃ§Ã£o a qualquer momento no meio do bloco
+                if ((pacman.nextDx === -pacman.dx && pacman.nextDx !== 0) || (pacman.nextDy === -pacman.dy && pacman.nextDy !== 0)) {
+                    pacman.dx = pacman.nextDx;
+                    pacman.dy = pacman.nextDy;
                 }
             }
 
             pacman.x += pacman.dx;
             pacman.y += pacman.dy;
 
-            // TÃºneis de teletransporte lateral
             if (pacman.x < -tileSize / 2) pacman.x = canvas.width - tileSize / 2;
             else if (pacman.x > canvas.width - tileSize / 2) pacman.x = -tileSize / 2;
 
@@ -424,7 +432,6 @@
                 pacman.mouthSpeed = -pacman.mouthSpeed;
             }
 
-            // IA dos Fantasmas (Firewalls)
             ghosts.forEach(ghost => {
                 const speed = ghost.mode === 'scared' ? 1 : 1.5;
                 
@@ -436,7 +443,7 @@
                         {dx: speed, dy: 0}
                     ].filter(d => {
                         if (d.dx === -ghost.dx && d.dy === -ghost.dy) return false;
-                        return !isWall(ghost.x + d.dx * 4, ghost.y + d.dy * 4, 6);
+                        return !isWall(ghost.x + d.dx * 4, ghost.y + d.dy * 4, 5);
                     });
 
                     if (possibleDirs.length === 0) {
@@ -494,7 +501,6 @@
             ctx.fillStyle = '#030309';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // RenderizaÃ§Ã£o do Labirinto Tech (Neon CibernÃ©tico)
             for (let r = 0; r < rows; r++) {
                 for (let c = 0; c < cols; c++) {
                     const tile = map[r][c];
@@ -504,21 +510,20 @@
                     if (tile === 1) {
                         ctx.fillStyle = '#060d26';
                         ctx.strokeStyle = '#00f2fe';
-                        ctx.lineWidth = 1.5;
+                        ctx.lineWidth = 1.2;
                         ctx.fillRect(x, y, tileSize, tileSize);
                         ctx.strokeRect(x, y, tileSize, tileSize);
                         
-                        // NÃ³ de circuito interno decorativo
                         ctx.strokeStyle = '#0284c7';
                         ctx.beginPath();
-                        ctx.arc(x + tileSize/2, y + tileSize/2, 2.5, 0, Math.PI * 2);
+                        ctx.arc(x + tileSize/2, y + tileSize/2, 2, 0, Math.PI * 2);
                         ctx.stroke();
                     } else if (tile === 0) {
                         ctx.beginPath();
-                        ctx.arc(x + tileSize / 2, y + tileSize / 2, 3, 0, Math.PI * 2);
+                        ctx.arc(x + tileSize / 2, y + tileSize / 2, 2.5, 0, Math.PI * 2);
                         ctx.fillStyle = '#38bdf8';
                         ctx.shadowColor = '#38bdf8';
-                        ctx.shadowBlur = 6;
+                        ctx.shadowBlur = 4;
                         ctx.fill();
                         ctx.shadowBlur = 0;
                         ctx.closePath();
@@ -526,10 +531,10 @@
                         const pulse = Math.floor(Date.now() / 250) % 2 === 0;
                         if (pulse) {
                             ctx.beginPath();
-                            ctx.arc(x + tileSize / 2, y + tileSize / 2, 7.5, 0, Math.PI * 2);
+                            ctx.arc(x + tileSize / 2, y + tileSize / 2, 6, 0, Math.PI * 2);
                             ctx.fillStyle = '#00f2fe';
                             ctx.shadowColor = '#00f2fe';
-                            ctx.shadowBlur = 14;
+                            ctx.shadowBlur = 10;
                             ctx.fill();
                             ctx.shadowBlur = 0;
                             ctx.closePath();
@@ -538,7 +543,6 @@
                 }
             }
 
-            // RenderizaÃ§Ã£o do Pac-Man Tech
             ctx.save();
             ctx.translate(pacman.x + tileSize / 2, pacman.y + tileSize / 2);
             
@@ -554,12 +558,11 @@
             ctx.lineTo(0, 0);
             ctx.fillStyle = '#00f2fe';
             ctx.shadowColor = '#00f2fe';
-            ctx.shadowBlur = 12;
+            ctx.shadowBlur = 10;
             ctx.fill();
             ctx.closePath();
             ctx.restore();
 
-            // RenderizaÃ§Ã£o dos Fantasmas (Firewalls)
             ghosts.forEach(ghost => {
                 ctx.save();
                 ctx.translate(ghost.x + tileSize / 2, ghost.y + tileSize / 2);
@@ -572,22 +575,21 @@
                 ctx.lineTo(-pacman.radius, pacman.radius);
                 ctx.fillStyle = ghostColor;
                 ctx.shadowColor = ghostColor;
-                ctx.shadowBlur = 10;
+                ctx.shadowBlur = 8;
                 ctx.fill();
                 ctx.closePath();
 
-                // Olhos Ãpticos Tech
                 ctx.fillStyle = '#ffffff';
                 ctx.beginPath();
-                ctx.arc(-4, -4, 3.5, 0, Math.PI * 2);
-                ctx.arc(4, -4, 3.5, 0, Math.PI * 2);
+                ctx.arc(-3, -3, 3, 0, Math.PI * 2);
+                ctx.arc(3, -3, 3, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.closePath();
 
                 ctx.fillStyle = '#030309';
                 ctx.beginPath();
-                ctx.arc(-4 + (ghost.dx > 0 ? 1 : ghost.dx < 0 ? -1 : 0), -4 + (ghost.dy > 0 ? 1 : ghost.dy < 0 ? -1 : 0), 1.5, 0, Math.PI * 2);
-                ctx.arc(4 + (ghost.dx > 0 ? 1 : ghost.dx < 0 ? -1 : 0), -4 + (ghost.dy > 0 ? 1 : ghost.dy < 0 ? -1 : 0), 1.5, 0, Math.PI * 2);
+                ctx.arc(-3 + (ghost.dx > 0 ? 1 : ghost.dx < 0 ? -1 : 0), -3 + (ghost.dy > 0 ? 1 : ghost.dy < 0 ? -1 : 0), 1.2, 0, Math.PI * 2);
+                ctx.arc(3 + (ghost.dx > 0 ? 1 : ghost.dx < 0 ? -1 : 0), -3 + (ghost.dy > 0 ? 1 : ghost.dy < 0 ? -1 : 0), 1.2, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.closePath();
 
@@ -607,7 +609,7 @@
             if (pelletsLeft <= 0) {
                 gameState = 'WIN';
                 soundFX.playWin();
-                showOverlay('SISTEMA LIMPO', 'Parabens! Todos os nodes de dados coletados com sucesso!', 'REINICIAR SISTEMA');
+                showOverlay('SISTEMA LIMPO', 'Parabens! Todos os nodes coletados com sucesso!', 'REINICIAR');
             }
         }
 
@@ -636,7 +638,6 @@
             overlay.classList.add('opacity-0', 'pointer-events-none');
         }
 
-        // Controles por Teclado
         window.addEventListener('keydown', e => {
             soundFX.init();
             if (['ArrowUp', 'KeyW'].includes(e.code)) {
@@ -652,7 +653,6 @@
             }
         });
 
-        // Controles TÃ¡teis robustos para os botÃµes do D-Pad
         const bindTouchControl = (elementId, dx, dy) => {
             const el = document.getElementById(elementId);
             if (!el) return;
@@ -698,7 +698,6 @@
             soundBtn.innerText = soundFX.enabled ? 'ð Som: ON' : 'ð Som: OFF';
         });
 
-        // RenderizaÃ§Ã£o inicial
         initGame();
         draw();
     </script>
