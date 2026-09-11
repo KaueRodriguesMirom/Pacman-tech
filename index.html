@@ -1400,10 +1400,7 @@ function oppositeDirection(
    CONTROLE PAC-MAN
 ========================================================= */
 
-function setDirection(
-    x,
-    y
-) {
+function setDirection(x, y) {
 
     pacman.nextDir = {
         x,
@@ -1412,6 +1409,10 @@ function setDirection(
 
     soundFX.init();
 
+    /*
+     * Se a direção solicitada for o sentido contrário,
+     * vira imediatamente.
+     */
     if (
         oppositeDirection(
             pacman.nextDir,
@@ -1419,8 +1420,40 @@ function setDirection(
         )
     ) {
 
-        pacman.dir =
-            {...pacman.nextDir};
+        pacman.dir = {
+            ...pacman.nextDir
+        };
+
+        return;
+    }
+
+    /*
+     * Se estiver parado, tenta iniciar imediatamente.
+     */
+    if (
+        pacman.dir.x === 0 &&
+        pacman.dir.y === 0
+    ) {
+
+        const tile = getTile(
+            pacman.x,
+            pacman.y
+        );
+
+        if (
+            validTile(tile.r, tile.c) &&
+            canGoFromTile(
+                tile.c,
+                tile.r,
+                pacman.nextDir
+            )
+        ) {
+
+            pacman.dir = {
+                ...pacman.nextDir
+            };
+
+        }
 
     }
 
