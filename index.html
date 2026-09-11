@@ -980,15 +980,14 @@ function canMove(x, y, radius = 6) {
     return true;
 }
 
-
 function isCentered(x, y, tolerance = 1.5) {
 
     const centerX =
-        Math.round(x / tileSize) * tileSize +
+        Math.floor(x / tileSize) * tileSize +
         tileSize / 2;
 
     const centerY =
-        Math.round(y / tileSize) * tileSize +
+        Math.floor(y / tileSize) * tileSize +
         tileSize / 2;
 
     return (
@@ -996,7 +995,6 @@ function isCentered(x, y, tolerance = 1.5) {
         Math.abs(y - centerY) <= tolerance
     );
 }
-
 
 function snapToGrid(entity) {
 
@@ -1047,33 +1045,64 @@ function tryChangeDirection() {
         return;
     }
 
-    const testDistance = 7;
+    /*
+        Verifica se o Pac-Man está próximo
+        do centro da célula.
+    */
 
-    const canTurn = canMove(
+    if (
+        isCentered(
+            pacman.x,
+            pacman.y,
+            2.5
+        )
+    ) {
 
-        pacman.x +
-        pacman.nextDx *
-        testDistance,
+        const centerX =
+            Math.floor(
+                pacman.x / tileSize
+            ) * tileSize +
+            tileSize / 2;
 
-        pacman.y +
-        pacman.nextDy *
-        testDistance,
+        const centerY =
+            Math.floor(
+                pacman.y / tileSize
+            ) * tileSize +
+            tileSize / 2;
 
-        7
-    );
+        /*
+            Testa a próxima célula
+        */
 
-    if (canTurn) {
+        const testX =
+            centerX +
+            pacman.nextDx *
+            8;
 
-        snapToGrid(pacman);
+        const testY =
+            centerY +
+            pacman.nextDy *
+            8;
 
-        pacman.dx =
-            pacman.nextDx;
+        if (
+            canMove(
+                testX,
+                testY,
+                7
+            )
+        ) {
 
-        pacman.dy =
-            pacman.nextDy;
+            pacman.x = centerX;
+            pacman.y = centerY;
+
+            pacman.dx =
+                pacman.nextDx;
+
+            pacman.dy =
+                pacman.nextDy;
+        }
     }
 }
-
 
 /* =========================================================
    COLLECT NODES
@@ -1147,26 +1176,24 @@ function updatePacman() {
             3
         ) * 0.15;
 
+    /*
+        Primeiro tenta executar
+        imediatamente a direção solicitada.
+    */
+
     tryChangeDirection();
 
-    if (directionIsOpposite(pacman)) {
-
-        pacman.dx =
-            pacman.nextDx;
-
-        pacman.dy =
-            pacman.nextDy;
-    }
+    /*
+        Movimento normal
+    */
 
     const nextX =
         pacman.x +
-        pacman.dx *
-        speed;
+        pacman.dx * speed;
 
     const nextY =
         pacman.y +
-        pacman.dy *
-        speed;
+        pacman.dy * speed;
 
     if (
         canMove(
@@ -1180,6 +1207,12 @@ function updatePacman() {
         pacman.y = nextY;
 
     } else {
+
+        /*
+            Se encontrou uma parede,
+            para exatamente no centro
+            da célula atual.
+        */
 
         snapToGrid(pacman);
 
@@ -1209,6 +1242,10 @@ function updatePacman() {
             -tileSize / 2;
     }
 
+    /*
+        Animação da boca
+    */
+
     pacman.mouthAngle +=
         pacman.mouthSpeed;
 
@@ -1220,11 +1257,16 @@ function updatePacman() {
         pacman.mouthSpeed *= -1;
     }
 
+    /*
+        Coleta o node quando chega
+        ao centro da célula.
+    */
+
     if (
         isCentered(
             pacman.x,
             pacman.y,
-            1.5
+            2
         )
     ) {
 
@@ -1233,8 +1275,6 @@ function updatePacman() {
         collectCurrentTile();
     }
 }
-
-
 /* =========================================================
    GHOST AI
 ========================================================= */
