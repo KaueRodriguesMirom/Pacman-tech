@@ -1,0 +1,3465 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+>
+
+<title>Pac-Man Tech Pro - Arcade Edition</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link
+    href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&display=swap"
+    rel="stylesheet"
+>
+
+<script>
+tailwind.config = {
+    darkMode: 'class',
+    theme: {
+        extend: {
+            fontFamily: {
+                arcade: ['"Press Start 2P"', 'monospace'],
+                sans: ['Inter', 'sans-serif']
+            }
+        }
+    }
+};
+</script>
+
+<style>
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #010104;
+    color: #f3f4f6;
+
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+
+    overflow-x: hidden;
+}
+
+button {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+}
+
+#gameCanvas {
+    display: block;
+
+    width: min(100%, 380px);
+    height: auto;
+
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+
+    touch-action: none;
+}
+
+.arcade-glow {
+    box-shadow:
+        0 0 25px rgba(0,242,254,.25),
+        inset 0 0 15px rgba(0,242,254,.08);
+}
+
+.text-glow {
+    text-shadow: 0 0 10px rgba(0,242,254,.8);
+}
+
+.control-button {
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.control-button:active {
+    transform: scale(.94);
+}
+
+#messageOverlay {
+    transition:
+        opacity .2s ease,
+        visibility .2s ease;
+}
+
+@media (max-height:700px) {
+
+    header {
+        transform: scale(.92);
+        transform-origin: top center;
+        margin-bottom: -8px !important;
+    }
+
+    footer {
+        transform: scale(.9);
+        transform-origin: bottom center;
+        margin-top: -8px !important;
+    }
+}
+
+</style>
+</head>
+
+<body class="min-h-screen flex flex-col items-center justify-between p-2 sm:p-4">
+
+<header
+    class="w-full max-w-md flex flex-col items-center bg-[#0a0a16] border border-[#00f2fe]/40 rounded-2xl p-3 shadow-xl mb-2 gap-2.5"
+>
+
+    <div class="flex items-center gap-3 w-full justify-between">
+
+        <div class="flex items-center gap-2.5">
+
+            <div
+                class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/50"
+            >
+                <span class="text-white font-arcade text-sm">
+                    P
+                </span>
+            </div>
+
+            <div>
+
+                <h1
+                    class="font-arcade text-xs text-cyan-400 text-glow tracking-wider"
+                >
+                    PAC-MAN TECH
+                </h1>
+
+                <p class="text-[9px] text-cyan-300/70">
+                    Grid Cibernético v6.0
+                </p>
+
+            </div>
+
+        </div>
+
+        <div
+            class="flex items-center gap-2 bg-[#030309] px-3 py-1.5 rounded-xl border border-[#00f2fe]/30"
+        >
+
+            <div class="text-center">
+
+                <div
+                    class="text-[7px] uppercase font-semibold text-cyan-400 font-arcade"
+                >
+                    Pontos
+                </div>
+
+                <div
+                    id="scoreDisplay"
+                    class="font-arcade text-xs text-white"
+                >
+                    0
+                </div>
+
+            </div>
+
+            <div class="w-[1px] h-6 bg-cyan-500/30"></div>
+
+            <div class="text-center">
+
+                <div
+                    class="text-[7px] uppercase font-semibold text-cyan-400 font-arcade"
+                >
+                    Recorde
+                </div>
+
+                <div
+                    id="highScoreDisplay"
+                    class="font-arcade text-xs text-teal-300"
+                >
+                    0
+                </div>
+
+            </div>
+
+            <div class="w-[1px] h-6 bg-cyan-500/30"></div>
+
+            <div class="text-center">
+
+                <div
+                    class="text-[7px] uppercase font-semibold text-cyan-400 font-arcade"
+                >
+                    Vidas
+                </div>
+
+                <div
+                    id="livesDisplay"
+                    class="flex items-center gap-1 mt-0.5 justify-center"
+                ></div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="w-full flex items-center justify-between px-1">
+
+        <div class="text-[8px] text-slate-500 font-arcade">
+
+            NÍVEL
+
+            <span
+                id="levelDisplay"
+                class="text-cyan-400"
+            >
+                1
+            </span>
+
+        </div>
+
+        <div
+            id="statusDisplay"
+            class="text-[8px] text-cyan-400 font-arcade"
+        >
+            SISTEMA ONLINE
+        </div>
+
+        <div class="text-[8px] text-slate-500 font-arcade">
+
+            NODES:
+
+            <span
+                id="pelletsDisplay"
+                class="text-cyan-400"
+            >
+                0
+            </span>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main
+    class="w-full max-w-md flex flex-col items-center relative flex-grow justify-center my-1"
+>
+
+    <div
+        id="messageOverlay"
+        class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md rounded-2xl opacity-100"
+    >
+
+        <div
+            class="bg-[#0a0a16] border-2 border-[#00f2fe] p-5 rounded-2xl shadow-2xl flex flex-col items-center text-center max-w-xs arcade-glow mx-4"
+        >
+
+            <h2
+                id="overlayTitle"
+                class="font-arcade text-base text-cyan-400 mb-2.5 text-glow"
+            >
+                PAC-MAN TECH
+            </h2>
+
+            <p
+                id="overlayText"
+                class="text-slate-300 text-xs mb-5 leading-relaxed"
+            >
+                Navegue pelo grid cibernético, colete os nodes e destrua os firewalls!
+            </p>
+
+            <button
+                id="startButton"
+                class="w-full py-3 px-5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-arcade text-xs rounded-xl shadow-lg shadow-cyan-500/40 transform transition active:scale-95 cursor-pointer"
+            >
+                INICIALIZAR SISTEMA
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div
+        class="relative bg-[#030309] border-2 border-[#00f2fe]/60 rounded-2xl p-1 shadow-2xl arcade-glow flex items-center justify-center max-w-full"
+    >
+
+        <canvas id="gameCanvas"></canvas>
+
+    </div>
+
+</main>
+
+
+<footer
+    class="w-full max-w-md mt-2 flex flex-col items-center justify-between gap-2 bg-[#0a0a16] border border-[#00f2fe]/40 rounded-2xl p-2.5 text-xs text-slate-400"
+>
+
+    <div
+        class="flex flex-col items-center justify-center w-full my-1"
+    >
+
+        <div
+            class="text-[8px] font-arcade text-cyan-400 mb-1.5 uppercase tracking-wider"
+        >
+            Controles Direcionais
+        </div>
+
+        <div
+            class="flex flex-col items-center w-full gap-1.5"
+        >
+
+            <button
+                id="btnUp"
+                class="control-button w-16 h-11 bg-[#030309] border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center active:bg-cyan-500 active:text-black text-xl font-bold shadow-md shadow-cyan-500/30"
+            >
+                ▲
+            </button>
+
+            <div
+                class="flex items-center justify-center gap-6 w-full"
+            >
+
+                <button
+                    id="btnLeft"
+                    class="control-button w-20 h-11 bg-[#030309] border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center active:bg-cyan-500 active:text-black text-xl font-bold shadow-md shadow-cyan-500/30"
+                >
+                    ◀
+                </button>
+
+                <button
+                    id="btnDown"
+                    class="control-button w-16 h-11 bg-[#030309] border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center active:bg-cyan-500 active:text-black text-xl font-bold shadow-md shadow-cyan-500/30"
+                >
+                    ▼
+                </button>
+
+                <button
+                    id="btnRight"
+                    class="control-button w-20 h-11 bg-[#030309] border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center active:bg-cyan-500 active:text-black text-xl font-bold shadow-md shadow-cyan-500/30"
+                >
+                    ▶
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div
+        class="w-full flex items-center justify-between px-1 pt-1 border-t border-cyan-500/20"
+    >
+
+        <div class="flex items-center gap-2">
+
+            <button
+                id="pauseButton"
+                class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]"
+            >
+                Pausar
+            </button>
+
+            <button
+                id="soundButton"
+                class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]"
+            >
+                🔊 Som: ON
+            </button>
+
+        </div>
+
+        <div
+            class="text-[9px] text-cyan-400/80 font-arcade"
+        >
+            PAC-MAN TECH v6.0
+        </div>
+
+    </div>
+
+</footer>
+
+
+<script>
+
+/* =========================================================
+   REFERÊNCIAS DOM
+========================================================= */
+
+const canvas =
+    document.getElementById('gameCanvas');
+
+const ctx =
+    canvas.getContext('2d');
+
+const scoreDisplay =
+    document.getElementById('scoreDisplay');
+
+const highScoreDisplay =
+    document.getElementById('highScoreDisplay');
+
+const livesDisplay =
+    document.getElementById('livesDisplay');
+
+const levelDisplay =
+    document.getElementById('levelDisplay');
+
+const pelletsDisplay =
+    document.getElementById('pelletsDisplay');
+
+const statusDisplay =
+    document.getElementById('statusDisplay');
+
+const messageOverlay =
+    document.getElementById('messageOverlay');
+
+const overlayTitle =
+    document.getElementById('overlayTitle');
+
+const overlayText =
+    document.getElementById('overlayText');
+
+const startButton =
+    document.getElementById('startButton');
+
+const pauseButton =
+    document.getElementById('pauseButton');
+
+const soundButton =
+    document.getElementById('soundButton');
+
+
+/* =========================================================
+   SOM
+========================================================= */
+
+class SoundFX {
+
+    constructor() {
+
+        this.enabled = true;
+        this.ctx = null;
+        this.master = null;
+
+        this.lastMove = 0;
+        this.initialized = false;
+    }
+
+    init() {
+
+        if (!this.enabled) {
+            return;
+        }
+
+        const AudioContext =
+            window.AudioContext ||
+            window.webkitAudioContext;
+
+        if (!AudioContext) {
+            return;
+        }
+
+        if (!this.ctx) {
+
+            try {
+
+                this.ctx =
+                    new AudioContext();
+
+                this.master =
+                    this.ctx.createGain();
+
+                this.master.gain.value =
+                    0.75;
+
+                this.master.connect(
+                    this.ctx.destination
+                );
+
+            } catch {
+                return;
+            }
+        }
+
+        if (
+            this.ctx.state ===
+            'suspended'
+        ) {
+
+            this.ctx.resume()
+                .catch(() => {});
+        }
+
+        this.initialized = true;
+    }
+
+    tone(
+        type,
+        frequency,
+        duration,
+        volume = .05,
+        endFrequency = null
+    ) {
+
+        if (!this.enabled) {
+            return;
+        }
+
+        this.init();
+
+        if (
+            !this.ctx ||
+            !this.master
+        ) {
+            return;
+        }
+
+        const now =
+            this.ctx.currentTime;
+
+        const oscillator =
+            this.ctx.createOscillator();
+
+        const gain =
+            this.ctx.createGain();
+
+        oscillator.type =
+            type;
+
+        oscillator.frequency.setValueAtTime(
+            Math.max(1, frequency),
+            now
+        );
+
+        if (
+            endFrequency !== null
+        ) {
+
+            oscillator.frequency.exponentialRampToValueAtTime(
+                Math.max(1, endFrequency),
+                now + duration
+            );
+        }
+
+        gain.gain.setValueAtTime(
+            volume,
+            now
+        );
+
+        gain.gain.exponentialRampToValueAtTime(
+            .001,
+            now + duration
+        );
+
+        oscillator.connect(gain);
+        gain.connect(this.master);
+
+        oscillator.start(now);
+
+        oscillator.stop(
+            now + duration
+        );
+    }
+
+    pellet() {
+
+        this.tone(
+            'square',
+            700,
+            .055,
+            .055,
+            1050
+        );
+    }
+
+    power() {
+
+        this.tone(
+            'square',
+            280,
+            .18,
+            .09,
+            850
+        );
+    }
+
+    move() {
+
+        const now =
+            performance.now();
+
+        if (
+            now -
+            this.lastMove <
+            100
+        ) {
+            return;
+        }
+
+        this.lastMove =
+            now;
+
+        this.tone(
+            'triangle',
+            110,
+            .035,
+            .018,
+            150
+        );
+    }
+
+    ghost() {
+
+        this.tone(
+            'sawtooth',
+            180,
+            .20,
+            .08,
+            700
+        );
+    }
+
+    death() {
+
+        this.tone(
+            'sawtooth',
+            450,
+            .50,
+            .12,
+            55
+        );
+    }
+
+    win() {
+
+        if (!this.enabled) {
+            return;
+        }
+
+        this.init();
+
+        if (!this.ctx) {
+            return;
+        }
+
+        const notes = [
+            350,
+            500,
+            650,
+            800,
+            1000
+        ];
+
+        notes.forEach(
+            (frequency, index) => {
+
+                setTimeout(() => {
+
+                    if (
+                        this.enabled
+                    ) {
+
+                        this.tone(
+                            'square',
+                            frequency,
+                            .10,
+                            .07
+                        );
+                    }
+
+                }, index * 90);
+
+            }
+        );
+    }
+}
+
+const soundFX =
+    new SoundFX();
+
+
+/* =========================================================
+   MAPA
+========================================================= */
+
+const initialMap = [
+
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+
+[1,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,3,1],
+
+[1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+
+[1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+
+[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+
+[1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1],
+
+[1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+
+[1,1,1,1,0,1,1,1,2,1,2,1,1,1,0,1,1,1,1],
+
+[2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2],
+
+[1,1,1,1,0,1,2,1,1,4,1,1,2,1,0,1,1,1,1],
+
+[2,2,2,2,0,2,2,1,1,2,1,2,2,2,0,2,2,2,2],
+
+[1,1,1,1,0,1,2,1,1,1,1,1,2,1,0,1,1,1,1],
+
+[2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2],
+
+[1,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1],
+
+[1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+
+[1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+
+[1,3,0,1,0,0,0,0,0,2,0,0,0,0,0,1,0,3,1],
+
+[1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1],
+
+[1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+
+[1,0,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,0,1],
+
+[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+
+];
+
+
+/* =========================================================
+   DIMENSÕES
+========================================================= */
+
+const rows =
+    initialMap.length;
+
+const cols =
+    initialMap[0].length;
+
+const TILE =
+    20;
+
+const WIDTH =
+    cols * TILE;
+
+const HEIGHT =
+    rows * TILE;
+
+canvas.width =
+    WIDTH;
+
+canvas.height =
+    HEIGHT;
+
+
+/* =========================================================
+   ESTADO
+========================================================= */
+
+let map = [];
+
+let score = 0;
+let highScore = 0;
+let level = 1;
+let lives = 3;
+
+let pelletsLeft = 0;
+
+let powerTimer = 0;
+
+let gameState =
+    'START';
+
+let lifeLostTimer = 0;
+
+
+/* =========================================================
+   RECORD
+========================================================= */
+
+try {
+
+    highScore =
+        Number(
+            localStorage.getItem(
+                'pacman_tech_pro_highscore'
+            ) || 0
+        );
+
+} catch {
+
+    highScore = 0;
+}
+
+
+function updateHighScore() {
+
+    if (
+        score >
+        highScore
+    ) {
+
+        highScore =
+            score;
+
+        try {
+
+            localStorage.setItem(
+                'pacman_tech_pro_highscore',
+                String(highScore)
+            );
+
+        } catch {}
+    }
+}
+
+
+/* =========================================================
+   DIREÇÕES
+========================================================= */
+
+const DIR = {
+
+    UP: {
+        x: 0,
+        y: -1
+    },
+
+    DOWN: {
+        x: 0,
+        y: 1
+    },
+
+    LEFT: {
+        x: -1,
+        y: 0
+    },
+
+    RIGHT: {
+        x: 1,
+        y: 0
+    },
+
+    NONE: {
+        x: 0,
+        y: 0
+    }
+
+};
+
+
+const directions = [
+    DIR.UP,
+    DIR.DOWN,
+    DIR.LEFT,
+    DIR.RIGHT
+];
+
+
+function copyDir(dir) {
+
+    return {
+        x: dir.x,
+        y: dir.y
+    };
+}
+
+
+function sameDir(a,b) {
+
+    return (
+        a.x === b.x &&
+        a.y === b.y
+    );
+}
+
+
+function oppositeDir(a,b) {
+
+    return (
+        a.x === -b.x &&
+        a.y === -b.y
+    );
+}
+
+
+/* =========================================================
+   PAC-MAN
+========================================================= */
+
+const pacman = {
+
+    x: 0,
+    y: 0,
+
+    dir:
+        copyDir(DIR.NONE),
+
+    nextDir:
+        copyDir(DIR.NONE),
+
+    speed: 92,
+
+    radius: 7.5,
+
+    mouth: .18,
+
+    mouthDirection: 1
+
+};
+
+
+/* =========================================================
+   FANTASMAS
+========================================================= */
+
+const ghostDefinitions = [
+
+    {
+        color: '#ef4444',
+        startX: 9,
+        startY: 9
+    },
+
+    {
+        color: '#ec4899',
+        startX: 8,
+        startY: 10
+    },
+
+    {
+        color: '#00f2fe',
+        startX: 9,
+        startY: 10
+    },
+
+    {
+        color: '#fb923c',
+        startX: 10,
+        startY: 10
+    }
+
+];
+
+
+let ghosts = [];
+
+
+/* =========================================================
+   GRID
+========================================================= */
+
+function tileCenter(c,r) {
+
+    return {
+        x:
+            c * TILE +
+            TILE / 2,
+
+        y:
+            r * TILE +
+            TILE / 2
+    };
+}
+
+
+function getTile(x,y) {
+
+    return {
+
+        c:
+            Math.floor(x / TILE),
+
+        r:
+            Math.floor(y / TILE)
+
+    };
+}
+
+
+function validTile(r,c) {
+
+    return (
+        r >= 0 &&
+        r < rows &&
+        c >= 0 &&
+        c < cols
+    );
+}
+
+
+function isWall(r,c) {
+
+    if (
+        !validTile(r,c)
+    ) {
+        return true;
+    }
+
+    return (
+        map[r][c] === 1
+    );
+}
+
+
+function canGoFromTile(
+    c,
+    r,
+    dir
+) {
+
+    if (
+        dir.x === 0 &&
+        dir.y === 0
+    ) {
+        return false;
+    }
+
+    return !isWall(
+        r + dir.y,
+        c + dir.x
+    );
+}
+
+
+/* =========================================================
+   MAPA / NODES
+========================================================= */
+
+function resetMap() {
+
+    map =
+        initialMap.map(
+            row => [...row]
+        );
+
+    pelletsLeft = 0;
+
+    for (
+        let r = 0;
+        r < rows;
+        r++
+    ) {
+
+        for (
+            let c = 0;
+            c < cols;
+            c++
+        ) {
+
+            if (
+                map[r][c] === 0 ||
+                map[r][c] === 3
+            ) {
+
+                pelletsLeft++;
+            }
+        }
+    }
+}
+
+
+/* =========================================================
+   POSIÇÕES
+========================================================= */
+
+function resetPositions() {
+
+    const pacStart =
+        tileCenter(9,16);
+
+    pacman.x =
+        pacStart.x;
+
+    pacman.y =
+        pacStart.y;
+
+    pacman.dir =
+        copyDir(DIR.NONE);
+
+    pacman.nextDir =
+        copyDir(DIR.NONE);
+
+    ghosts =
+        ghostDefinitions.map(
+            (definition,index) => {
+
+                const position =
+                    tileCenter(
+                        definition.startX,
+                        definition.startY
+                    );
+
+                return {
+
+                    x:
+                        position.x,
+
+                    y:
+                        position.y,
+
+                    color:
+                        definition.color,
+
+                    startX:
+                        definition.startX,
+
+                    startY:
+                        definition.startY,
+
+                    dir:
+                        copyDir(
+                            index % 2 === 0
+                                ? DIR.UP
+                                : DIR.DOWN
+                        ),
+
+                    mode:
+                        'house',
+
+                    houseTimer:
+                        index * .8 + .5,
+
+                    respawnTimer:
+                        0
+
+                };
+
+            }
+        );
+}
+
+
+function initGame() {
+
+    score = 0;
+
+    level = 1;
+
+    lives = 3;
+
+    powerTimer = 0;
+
+    lifeLostTimer = 0;
+
+    resetMap();
+
+    resetPositions();
+
+    updateUI();
+}
+
+
+/* =========================================================
+   UI
+========================================================= */
+
+function updateUI() {
+
+    scoreDisplay.textContent =
+        score;
+
+    highScoreDisplay.textContent =
+        highScore;
+
+    levelDisplay.textContent =
+        level;
+
+    pelletsDisplay.textContent =
+        pelletsLeft;
+
+    livesDisplay.innerHTML =
+        '';
+
+    for (
+        let i = 0;
+        i < lives;
+        i++
+    ) {
+
+        const life =
+            document.createElement('div');
+
+        life.className =
+            'w-2.5 h-2.5 rounded bg-cyan-400 shadow-sm shadow-cyan-500/50';
+
+        livesDisplay.appendChild(
+            life
+        );
+    }
+}
+
+
+/* =========================================================
+   CONTROLE
+========================================================= */
+
+function setDirection(x,y) {
+
+    soundFX.init();
+
+    pacman.nextDir = {
+        x,
+        y
+    };
+
+    /*
+     * Se estiver parado, tenta
+     * imediatamente começar.
+     */
+
+    if (
+        pacman.dir.x === 0 &&
+        pacman.dir.y === 0
+    ) {
+
+        const tile =
+            getTile(
+                pacman.x,
+                pacman.y
+            );
+
+        if (
+            validTile(
+                tile.r,
+                tile.c
+            ) &&
+            canGoFromTile(
+                tile.c,
+                tile.r,
+                pacman.nextDir
+            )
+        ) {
+
+            pacman.dir =
+                copyDir(
+                    pacman.nextDir
+                );
+        }
+
+        return;
+    }
+
+    /*
+     * Inversão de direção é
+     * instantânea.
+     */
+
+    if (
+        oppositeDir(
+            pacman.nextDir,
+            pacman.dir
+        )
+    ) {
+
+        pacman.dir =
+            copyDir(
+                pacman.nextDir
+            );
+    }
+}
+
+
+/* =========================================================
+   MOVIMENTO GRID
+========================================================= */
+
+function isNearCenter(
+    entity,
+    tolerance = 1.5
+) {
+
+    const tile =
+        getTile(
+            entity.x,
+            entity.y
+        );
+
+    if (
+        !validTile(
+            tile.r,
+            tile.c
+        )
+    ) {
+        return false;
+    }
+
+    const center =
+        tileCenter(
+            tile.c,
+            tile.r
+        );
+
+    return (
+        Math.abs(
+            entity.x -
+            center.x
+        ) <= tolerance &&
+        Math.abs(
+            entity.y -
+            center.y
+        ) <= tolerance
+    );
+}
+
+
+function snapToCenter(entity) {
+
+    const tile =
+        getTile(
+            entity.x,
+            entity.y
+        );
+
+    if (
+        !validTile(
+            tile.r,
+            tile.c
+        )
+    ) {
+        return;
+    }
+
+    const center =
+        tileCenter(
+            tile.c,
+            tile.r
+        );
+
+    entity.x =
+        center.x;
+
+    entity.y =
+        center.y;
+}
+
+
+/*
+ * Movimento baseado em centros.
+ *
+ * Isso evita:
+ * - atravessar paredes
+ * - ficar preso em quinas
+ * - ultrapassar uma célula
+ * - perder curvas
+ * - delay perceptível
+ */
+
+function moveEntity(
+    entity,
+    speed,
+    dt
+) {
+
+    let remaining =
+        speed * dt;
+
+    let safety = 0;
+
+    while (
+        remaining > 0.001 &&
+        safety < 8
+    ) {
+
+        safety++;
+
+        if (
+            isNearCenter(
+                entity,
+                1.2
+            )
+        ) {
+
+            snapToCenter(entity);
+
+            const tile =
+                getTile(
+                    entity.x,
+                    entity.y
+                );
+
+            if (
+                !validTile(
+                    tile.r,
+                    tile.c
+                )
+            ) {
+                break;
+            }
+
+            /*
+             * Permite que a função
+             * específica da entidade
+             * escolha sua direção.
+             */
+
+            if (
+                typeof entity.chooseDirection ===
+                'function'
+            ) {
+
+                entity.chooseDirection(
+                    tile.c,
+                    tile.r
+                );
+            }
+
+            if (
+                entity.dir.x === 0 &&
+                entity.dir.y === 0
+            ) {
+                break;
+            }
+
+            if (
+                !canGoFromTile(
+                    tile.c,
+                    tile.r,
+                    entity.dir
+                )
+            ) {
+
+                entity.dir =
+                    copyDir(
+                        DIR.NONE
+                    );
+
+                break;
+            }
+        }
+
+        const tile =
+            getTile(
+                entity.x,
+                entity.y
+            );
+
+        if (
+            !validTile(
+                tile.r,
+                tile.c
+            )
+        ) {
+            break;
+        }
+
+        const center =
+            tileCenter(
+                tile.c,
+                tile.r
+            );
+
+        const nextCenter =
+            tileCenter(
+                tile.c +
+                entity.dir.x,
+
+                tile.r +
+                entity.dir.y
+            );
+
+        const dx =
+            nextCenter.x -
+            entity.x;
+
+        const dy =
+            nextCenter.y -
+            entity.y;
+
+        const distance =
+            Math.hypot(dx,dy);
+
+        if (
+            distance < 0.001
+        ) {
+
+            entity.x =
+                nextCenter.x;
+
+            entity.y =
+                nextCenter.y;
+
+            continue;
+        }
+
+        const amount =
+            Math.min(
+                remaining,
+                distance
+            );
+
+        /*
+         * Como a direção é sempre
+         * unitária, isso mantém
+         * o movimento perfeitamente
+         * alinhado à grade.
+         */
+
+        entity.x +=
+            entity.dir.x *
+            amount;
+
+        entity.y +=
+            entity.dir.y *
+            amount;
+
+        remaining -=
+            amount;
+
+        /*
+         * Se chegou exatamente
+         * no centro, a próxima
+         * iteração resolve a curva.
+         */
+
+        if (
+            amount >=
+            distance - .001
+        ) {
+
+            entity.x =
+                nextCenter.x;
+
+            entity.y =
+                nextCenter.y;
+        }
+    }
+}
+
+
+/* =========================================================
+   PAC-MAN
+========================================================= */
+
+function updatePacman(dt) {
+
+    /*
+     * Curva antecipada.
+     *
+     * Mesmo antes de chegar exatamente
+     * ao centro, a direção desejada fica
+     * armazenada e é aplicada assim que
+     * a curva é possível.
+     */
+
+    if (
+        isNearCenter(
+            pacman,
+            1.5
+        )
+    ) {
+
+        snapToCenter(pacman);
+
+        const tile =
+            getTile(
+                pacman.x,
+                pacman.y
+            );
+
+        /*
+         * Primeiro tenta a direção
+         * solicitada pelo jogador.
+         */
+
+        if (
+            canGoFromTile(
+                tile.c,
+                tile.r,
+                pacman.nextDir
+            )
+        ) {
+
+            pacman.dir =
+                copyDir(
+                    pacman.nextDir
+                );
+        }
+
+        /*
+         * Se a direção atual bateu
+         * na parede, para.
+         */
+
+        if (
+            !canGoFromTile(
+                tile.c,
+                tile.r,
+                pacman.dir
+            )
+        ) {
+
+            pacman.dir =
+                copyDir(
+                    DIR.NONE
+                );
+        }
+    }
+
+    if (
+        pacman.dir.x !== 0 ||
+        pacman.dir.y !== 0
+    ) {
+
+        moveEntity(
+            pacman,
+            pacman.speed,
+            dt
+        );
+
+        soundFX.move();
+    }
+
+    collectPellet();
+
+    /*
+     * Boca.
+     */
+
+    if (
+        pacman.dir.x !== 0 ||
+        pacman.dir.y !== 0
+    ) {
+
+        pacman.mouth +=
+            .12 *
+            pacman.mouthDirection *
+            dt;
+
+        if (
+            pacman.mouth >= .48
+        ) {
+
+            pacman.mouth =
+                .48;
+
+            pacman.mouthDirection =
+                -1;
+        }
+
+        if (
+            pacman.mouth <= .04
+        ) {
+
+            pacman.mouth =
+                .04;
+
+            pacman.mouthDirection =
+                1;
+        }
+    }
+
+    /*
+     * Túnel.
+     */
+
+    if (
+        pacman.x <
+        -TILE / 2
+    ) {
+
+        pacman.x =
+            WIDTH +
+            TILE / 2;
+
+    } else if (
+        pacman.x >
+        WIDTH +
+        TILE / 2
+    ) {
+
+        pacman.x =
+            -TILE / 2;
+    }
+}
+
+
+/* =========================================================
+   COLETA
+========================================================= */
+
+function collectPellet() {
+
+    const tile =
+        getTile(
+            pacman.x,
+            pacman.y
+        );
+
+    if (
+        !validTile(
+            tile.r,
+            tile.c
+        )
+    ) {
+        return;
+    }
+
+    const value =
+        map[tile.r][tile.c];
+
+    if (
+        value !== 0 &&
+        value !== 3
+    ) {
+        return;
+    }
+
+    /*
+     * Consome assim que Pac-Man
+     * chega na região central
+     * da célula.
+     */
+
+    const center =
+        tileCenter(
+            tile.c,
+            tile.r
+        );
+
+    const distance =
+        Math.hypot(
+            pacman.x -
+            center.x,
+
+            pacman.y -
+            center.y
+        );
+
+    if (
+        distance > 7
+    ) {
+        return;
+    }
+
+    map[tile.r][tile.c] =
+        2;
+
+    pelletsLeft--;
+
+    if (
+        value === 0
+    ) {
+
+        score += 10;
+
+        soundFX.pellet();
+
+    } else {
+
+        score += 50;
+
+        powerTimer =
+            8;
+
+        ghosts.forEach(
+            ghost => {
+
+                if (
+                    ghost.mode ===
+                    'chase'
+                ) {
+
+                    ghost.mode =
+                        'scared';
+
+                    ghost.dir =
+                        copyDir(
+                            oppositeDir(
+                                ghost.dir,
+                                DIR.NONE
+                            )
+                                ? ghost.dir
+                                : DIR.NONE
+                        );
+
+                    if (
+                        ghost.dir.x === 0 &&
+                        ghost.dir.y === 0
+                    ) {
+
+                        ghost.dir =
+                            copyDir(
+                                DIR.UP
+                            );
+                    }
+                }
+            }
+        );
+
+        soundFX.power();
+    }
+
+    updateHighScore();
+    updateUI();
+
+    checkWin();
+}
+
+
+/* =========================================================
+   FANTASMAS
+========================================================= */
+
+function availableDirections(
+    ghost
+) {
+
+    const tile =
+        getTile(
+            ghost.x,
+            ghost.y
+        );
+
+    if (
+        !validTile(
+            tile.r,
+            tile.c
+        )
+    ) {
+        return [];
+    }
+
+    let dirs =
+        directions.filter(
+            dir => {
+
+                if (
+                    oppositeDir(
+                        dir,
+                        ghost.dir
+                    )
+                ) {
+                    return false;
+                }
+
+                return canGoFromTile(
+                    tile.c,
+                    tile.r,
+                    dir
+                );
+            }
+        );
+
+    /*
+     * Beco sem saída.
+     */
+
+    if (
+        dirs.length === 0
+    ) {
+
+        dirs =
+            directions.filter(
+                dir =>
+                    canGoFromTile(
+                        tile.c,
+                        tile.r,
+                        dir
+                    )
+            );
+    }
+
+    return dirs;
+}
+
+
+function chooseGhostDirection(
+    ghost
+) {
+
+    const tile =
+        getTile(
+            ghost.x,
+            ghost.y
+        );
+
+    if (
+        !validTile(
+            tile.r,
+            tile.c
+        )
+    ) {
+
+        ghost.dir =
+            copyDir(DIR.NONE);
+
+        return;
+    }
+
+    const dirs =
+        availableDirections(
+            ghost
+        );
+
+    if (
+        dirs.length === 0
+    ) {
+
+        ghost.dir =
+            copyDir(DIR.NONE);
+
+        return;
+    }
+
+    /*
+     * Scared = comportamento
+     * aleatório.
+     */
+
+    if (
+        ghost.mode ===
+        'scared'
+    ) {
+
+        ghost.dir =
+            copyDir(
+                dirs[
+                    Math.floor(
+                        Math.random() *
+                        dirs.length
+                    )
+                ]
+            );
+
+        return;
+    }
+
+    /*
+     * Perseguição.
+     */
+
+    let bestDir =
+        dirs[0];
+
+    let bestDistance =
+        Infinity;
+
+    dirs.forEach(
+        dir => {
+
+            const nextC =
+                tile.c +
+                dir.x;
+
+            const nextR =
+                tile.r +
+                dir.y;
+
+            const center =
+                tileCenter(
+                    nextC,
+                    nextR
+                );
+
+            const distance =
+                Math.hypot(
+                    center.x -
+                    pacman.x,
+
+                    center.y -
+                    pacman.y
+                );
+
+            if (
+                distance <
+                bestDistance
+            ) {
+
+                bestDistance =
+                    distance;
+
+                bestDir =
+                    dir;
+            }
+        }
+    );
+
+    /*
+     * Pequena variação de IA.
+     */
+
+    if (
+        dirs.length > 1 &&
+        Math.random() < .12
+    ) {
+
+        bestDir =
+            dirs[
+                Math.floor(
+                    Math.random() *
+                    dirs.length
+                )
+            ];
+    }
+
+    ghost.dir =
+        copyDir(bestDir);
+}
+
+
+/* =========================================================
+   CASA DOS FANTASMAS
+========================================================= */
+
+function updateGhostHouse(
+    ghost,
+    dt
+) {
+
+    ghost.houseTimer -= dt;
+
+    if (
+        ghost.houseTimer > 0
+    ) {
+
+        return;
+    }
+
+    /*
+     * Saída correta da casa.
+     */
+
+    const exit =
+        tileCenter(
+            9,
+            8
+        );
+
+    const dx =
+        exit.x -
+        ghost.x;
+
+    const dy =
+        exit.y -
+        ghost.y;
+
+    const distance =
+        Math.hypot(dx,dy);
+
+    if (
+        distance > 1
+    ) {
+
+        /*
+         * Movimento simples dentro
+         * da área da casa.
+         */
+
+        const speed =
+            65 * dt;
+
+        ghost.x +=
+            (dx / distance) *
+            Math.min(
+                speed,
+                distance
+            );
+
+        ghost.y +=
+            (dy / distance) *
+            Math.min(
+                speed,
+                distance
+            );
+
+        return;
+    }
+
+    ghost.x =
+        exit.x;
+
+    ghost.y =
+        exit.y;
+
+    ghost.dir =
+        copyDir(
+            DIR.UP
+        );
+
+    ghost.mode =
+        powerTimer > 0
+            ? 'scared'
+            : 'chase';
+}
+
+
+/* =========================================================
+   UPDATE FANTASMA
+========================================================= */
+
+function updateGhost(
+    ghost,
+    dt
+) {
+
+    if (
+        ghost.mode ===
+        'house'
+    ) {
+
+        updateGhostHouse(
+            ghost,
+            dt
+        );
+
+        return;
+    }
+
+    if (
+        ghost.mode ===
+        'respawn'
+    ) {
+
+        ghost.respawnTimer -= dt;
+
+        if (
+            ghost.respawnTimer <= 0
+        ) {
+
+            const position =
+                tileCenter(
+                    ghost.startX,
+                    ghost.startY
+                );
+
+            ghost.x =
+                position.x;
+
+            ghost.y =
+                position.y;
+
+            ghost.dir =
+                copyDir(DIR.UP);
+
+            ghost.mode =
+                'house';
+
+            ghost.houseTimer =
+                .25;
+        }
+
+        return;
+    }
+
+    /*
+     * Decide direção somente
+     * nos centros.
+     */
+
+    if (
+        isNearCenter(
+            ghost,
+            1.5
+        )
+    ) {
+
+        snapToCenter(ghost);
+
+        chooseGhostDirection(
+            ghost
+        );
+    }
+
+    moveEntity(
+        ghost,
+        ghost.mode === 'scared'
+            ? 68
+            : 78 +
+              Math.min(
+                  level - 1,
+                  8
+              ) * 3,
+
+        dt
+    );
+
+    /*
+     * Túnel.
+     */
+
+    if (
+        ghost.x <
+        -TILE / 2
+    ) {
+
+        ghost.x =
+            WIDTH +
+            TILE / 2;
+
+    } else if (
+        ghost.x >
+        WIDTH +
+        TILE / 2
+    ) {
+
+        ghost.x =
+            -TILE / 2;
+    }
+}
+
+
+/* =========================================================
+   COLISÕES
+========================================================= */
+
+function checkGhostCollision(
+    ghost
+) {
+
+    if (
+        ghost.mode ===
+        'house' ||
+        ghost.mode ===
+        'respawn'
+    ) {
+        return false;
+    }
+
+    const distance =
+        Math.hypot(
+            pacman.x -
+            ghost.x,
+
+            pacman.y -
+            ghost.y
+        );
+
+    if (
+        distance >
+        TILE * .68
+    ) {
+        return false;
+    }
+
+    /*
+     * Fantasma assustado.
+     */
+
+    if (
+        ghost.mode ===
+        'scared'
+    ) {
+
+        score += 200;
+
+        updateHighScore();
+
+        soundFX.ghost();
+
+        ghost.mode =
+            'respawn';
+
+        ghost.respawnTimer =
+            .35;
+
+        ghost.dir =
+            copyDir(DIR.NONE);
+
+        updateUI();
+
+        return false;
+    }
+
+    /*
+     * Pac-Man morreu.
+     */
+
+    lives--;
+
+    updateHighScore();
+
+    soundFX.death();
+
+    updateUI();
+
+    pacman.dir =
+        copyDir(DIR.NONE);
+
+    pacman.nextDir =
+        copyDir(DIR.NONE);
+
+    if (
+        lives <= 0
+    ) {
+
+        gameOver();
+
+        return true;
+    }
+
+    gameState =
+        'LIFE_LOST';
+
+    lifeLostTimer =
+        .85;
+
+    statusDisplay.textContent =
+        'CONEXÃO PERDIDA';
+
+    return true;
+}
+
+
+/* =========================================================
+   UPDATE GERAL
+========================================================= */
+
+function update(dt) {
+
+    if (
+        gameState ===
+        'LIFE_LOST'
+    ) {
+
+        lifeLostTimer -= dt;
+
+        if (
+            lifeLostTimer <= 0
+        ) {
+
+            resetPositions();
+
+            powerTimer = 0;
+
+            gameState =
+                'PLAYING';
+
+            statusDisplay.textContent =
+                'SISTEMA ONLINE';
+        }
+
+        return;
+    }
+
+    if (
+        gameState !==
+        'PLAYING'
+    ) {
+        return;
+    }
+
+    /*
+     * Power mode.
+     */
+
+    if (
+        powerTimer > 0
+    ) {
+
+        powerTimer -= dt;
+
+        if (
+            powerTimer <= 0
+        ) {
+
+            powerTimer = 0;
+
+            ghosts.forEach(
+                ghost => {
+
+                    if (
+                        ghost.mode ===
+                        'scared'
+                    ) {
+
+                        ghost.mode =
+                            'chase';
+                    }
+                }
+            );
+        }
+    }
+
+    updatePacman(dt);
+
+    if (
+        gameState !==
+        'PLAYING'
+    ) {
+        return;
+    }
+
+    for (
+        const ghost of ghosts
+    ) {
+
+        updateGhost(
+            ghost,
+            dt
+        );
+
+        if (
+            checkGhostCollision(
+                ghost
+            )
+        ) {
+
+            break;
+        }
+    }
+
+    updateUI();
+}
+
+
+/* =========================================================
+   VITÓRIA
+========================================================= */
+
+function checkWin() {
+
+    if (
+        pelletsLeft > 0
+    ) {
+        return;
+    }
+
+    gameState =
+        'WIN';
+
+    updateHighScore();
+
+    statusDisplay.textContent =
+        'GRID PURIFICADO';
+
+    soundFX.win();
+
+    showOverlay(
+        'SISTEMA LIMPO',
+
+        `Todos os nodes foram coletados! Pontuação: ${score}`,
+
+        'PRÓXIMO NÍVEL'
+    );
+}
+
+
+/* =========================================================
+   PRÓXIMO NÍVEL
+========================================================= */
+
+function nextLevel() {
+
+    level++;
+
+    powerTimer = 0;
+
+    resetMap();
+
+    resetPositions();
+
+    gameState =
+        'PLAYING';
+
+    statusDisplay.textContent =
+        'SISTEMA ONLINE';
+
+    updateUI();
+
+    hideOverlay();
+}
+
+
+/* =========================================================
+   GAME OVER
+========================================================= */
+
+function gameOver() {
+
+    gameState =
+        'GAMEOVER';
+
+    updateHighScore();
+
+    statusDisplay.textContent =
+        'SISTEMA COMPROMETIDO';
+
+    showOverlay(
+        'FALHA DE SEGURANÇA',
+
+        `Os firewalls capturaram o Pac-Man! Pontuação: ${score}`,
+
+        'TENTAR NOVAMENTE'
+    );
+}
+
+
+/* =========================================================
+   PAUSA
+========================================================= */
+
+function togglePause() {
+
+    if (
+        gameState ===
+        'PLAYING'
+    ) {
+
+        gameState =
+            'PAUSED';
+
+        statusDisplay.textContent =
+            'PROCESSO EM ESPERA';
+
+        showOverlay(
+            'SISTEMA PAUSADO',
+
+            'O processo foi pausado.',
+
+            'RETOMAR'
+        );
+
+        return;
+    }
+
+    if (
+        gameState ===
+        'PAUSED'
+    ) {
+
+        gameState =
+            'PLAYING';
+
+        statusDisplay.textContent =
+            'SISTEMA ONLINE';
+
+        hideOverlay();
+    }
+}
+
+
+/* =========================================================
+   OVERLAY
+========================================================= */
+
+function showOverlay(
+    title,
+    text,
+    button
+) {
+
+    overlayTitle.textContent =
+        title;
+
+    overlayText.textContent =
+        text;
+
+    startButton.textContent =
+        button;
+
+    messageOverlay.classList.remove(
+        'hidden'
+    );
+
+    messageOverlay.style.pointerEvents =
+        'auto';
+
+    messageOverlay.style.opacity =
+        '1';
+}
+
+
+function hideOverlay() {
+
+    messageOverlay.style.pointerEvents =
+        'none';
+
+    messageOverlay.style.opacity =
+        '0';
+
+    setTimeout(() => {
+
+        if (
+            gameState !==
+            'START' &&
+            gameState !==
+            'PAUSED' &&
+            gameState !==
+            'WIN' &&
+            gameState !==
+            'GAMEOVER'
+        ) {
+
+            messageOverlay.classList.add(
+                'hidden'
+            );
+        }
+
+    }, 220);
+}
+
+
+/* =========================================================
+   BOTÃO START
+========================================================= */
+
+startButton.addEventListener(
+    'click',
+    event => {
+
+        event.preventDefault();
+
+        soundFX.init();
+
+        /*
+         * Próximo nível.
+         */
+
+        if (
+            gameState ===
+            'WIN'
+        ) {
+
+            nextLevel();
+
+            return;
+        }
+
+        /*
+         * Retomar.
+         */
+
+        if (
+            gameState ===
+            'PAUSED'
+        ) {
+
+            gameState =
+                'PLAYING';
+
+            statusDisplay.textContent =
+                'SISTEMA ONLINE';
+
+            hideOverlay();
+
+            return;
+        }
+
+        /*
+         * Novo jogo.
+         */
+
+        initGame();
+
+        gameState =
+            'PLAYING';
+
+        statusDisplay.textContent =
+            'SISTEMA ONLINE';
+
+        hideOverlay();
+    }
+);
+
+
+/* =========================================================
+   PAUSE BUTTON
+========================================================= */
+
+pauseButton.addEventListener(
+    'click',
+    event => {
+
+        event.preventDefault();
+
+        soundFX.init();
+
+        togglePause();
+    }
+);
+
+
+/* =========================================================
+   SOM
+========================================================= */
+
+soundButton.addEventListener(
+    'click',
+    event => {
+
+        event.preventDefault();
+
+        soundFX.enabled =
+            !soundFX.enabled;
+
+        if (
+            soundFX.enabled
+        ) {
+
+            soundFX.init();
+
+            soundButton.textContent =
+                '🔊 Som: ON';
+
+        } else {
+
+            soundButton.textContent =
+                '🔇 Som: OFF';
+        }
+    }
+);
+
+
+/* =========================================================
+   TECLADO
+========================================================= */
+
+const keyboardDirections = {
+
+    ArrowUp:
+        [0,-1],
+
+    KeyW:
+        [0,-1],
+
+    ArrowDown:
+        [0,1],
+
+    KeyS:
+        [0,1],
+
+    ArrowLeft:
+        [-1,0],
+
+    KeyA:
+        [-1,0],
+
+    ArrowRight:
+        [1,0],
+
+    KeyD:
+        [1,0]
+
+};
+
+
+window.addEventListener(
+    'keydown',
+    event => {
+
+        if (
+            keyboardDirections[
+                event.code
+            ]
+        ) {
+
+            event.preventDefault();
+
+            soundFX.init();
+
+            const [
+                x,
+                y
+            ] =
+                keyboardDirections[
+                    event.code
+                ];
+
+            setDirection(
+                x,
+                y
+            );
+
+            return;
+        }
+
+        if (
+            event.code ===
+            'Escape'
+        ) {
+
+            event.preventDefault();
+
+            togglePause();
+        }
+    }
+);
+
+
+/* =========================================================
+   TOUCH / MOBILE
+========================================================= */
+
+function bindControl(
+    id,
+    x,
+    y
+) {
+
+    const button =
+        document.getElementById(id);
+
+    if (!button) {
+        return;
+    }
+
+    /*
+     * Somente pointerdown.
+     *
+     * Não usamos touchstart junto,
+     * porque isso causava dois eventos
+     * no celular.
+     */
+
+    button.addEventListener(
+        'pointerdown',
+        event => {
+
+            event.preventDefault();
+
+            setDirection(
+                x,
+                y
+            );
+
+        },
+        {
+            passive: false
+        }
+    );
+}
+
+
+bindControl(
+    'btnUp',
+    0,
+    -1
+);
+
+bindControl(
+    'btnDown',
+    0,
+    1
+);
+
+bindControl(
+    'btnLeft',
+    -1,
+    0
+);
+
+bindControl(
+    'btnRight',
+    1,
+    0
+);
+
+
+/* =========================================================
+   DESENHO DO MAPA
+========================================================= */
+
+function drawMap() {
+
+    const pulse =
+        .5 +
+        Math.sin(
+            performance.now() *
+            .008
+        ) * .5;
+
+    for (
+        let r = 0;
+        r < rows;
+        r++
+    ) {
+
+        for (
+            let c = 0;
+            c < cols;
+            c++
+        ) {
+
+            const tile =
+                map[r][c];
+
+            const x =
+                c * TILE;
+
+            const y =
+                r * TILE;
+
+            /*
+             * Fundo.
+             */
+
+            ctx.fillStyle =
+                '#030309';
+
+            ctx.fillRect(
+                x,
+                y,
+                TILE,
+                TILE
+            );
+
+            /*
+             * Parede.
+             */
+
+            if (
+                tile === 1
+            ) {
+
+                ctx.fillStyle =
+                    '#071329';
+
+                ctx.fillRect(
+                    x,
+                    y,
+                    TILE,
+                    TILE
+                );
+
+                ctx.strokeStyle =
+                    '#00d9ff';
+
+                ctx.lineWidth =
+                    1;
+
+                ctx.strokeRect(
+                    x + .5,
+                    y + .5,
+                    TILE - 1,
+                    TILE - 1
+                );
+
+                ctx.strokeStyle =
+                    'rgba(0,242,254,.25)';
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    x + TILE / 2,
+                    y + TILE / 2,
+                    2,
+                    0,
+                    Math.PI * 2
+                );
+
+                ctx.stroke();
+            }
+
+            /*
+             * Node.
+             */
+
+            if (
+                tile === 0
+            ) {
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    x + TILE / 2,
+                    y + TILE / 2,
+                    2.5,
+                    0,
+                    Math.PI * 2
+                );
+
+                ctx.fillStyle =
+                    '#38bdf8';
+
+                ctx.shadowColor =
+                    '#38bdf8';
+
+                ctx.shadowBlur =
+                    5;
+
+                ctx.fill();
+
+                ctx.shadowBlur =
+                    0;
+            }
+
+            /*
+             * Power node.
+             */
+
+            if (
+                tile === 3
+            ) {
+
+                ctx.beginPath();
+
+                ctx.arc(
+                    x + TILE / 2,
+                    y + TILE / 2,
+                    4 + pulse * 2,
+                    0,
+                    Math.PI * 2
+                );
+
+                ctx.fillStyle =
+                    '#00f2fe';
+
+                ctx.shadowColor =
+                    '#00f2fe';
+
+                ctx.shadowBlur =
+                    8 + pulse * 8;
+
+                ctx.fill();
+
+                ctx.shadowBlur =
+                    0;
+            }
+
+            /*
+             * Casa.
+             */
+
+            if (
+                tile === 4
+            ) {
+
+                ctx.strokeStyle =
+                    'rgba(0,242,254,.35)';
+
+                ctx.lineWidth =
+                    1.5;
+
+                ctx.strokeRect(
+                    x + 2,
+                    y + 2,
+                    TILE - 4,
+                    TILE - 4
+                );
+            }
+        }
+    }
+}
+
+
+/* =========================================================
+   DESENHO PAC-MAN
+========================================================= */
+
+function drawPacman() {
+
+    ctx.save();
+
+    ctx.translate(
+        pacman.x,
+        pacman.y
+    );
+
+    let angle = 0;
+
+    if (
+        pacman.dir.x > 0
+    ) {
+
+        angle = 0;
+
+    } else if (
+        pacman.dir.x < 0
+    ) {
+
+        angle =
+            Math.PI;
+
+    } else if (
+        pacman.dir.y > 0
+    ) {
+
+        angle =
+            Math.PI / 2;
+
+    } else if (
+        pacman.dir.y < 0
+    ) {
+
+        angle =
+            -Math.PI / 2;
+    }
+
+    ctx.rotate(angle);
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        0,
+        0
+    );
+
+    ctx.arc(
+        0,
+        0,
+        pacman.radius,
+        pacman.mouth,
+        Math.PI * 2 -
+        pacman.mouth
+    );
+
+    ctx.closePath();
+
+    ctx.fillStyle =
+        '#00f2fe';
+
+    ctx.shadowColor =
+        '#00f2fe';
+
+    ctx.shadowBlur =
+        10;
+
+    ctx.fill();
+
+    ctx.shadowBlur =
+        0;
+
+    ctx.restore();
+}
+
+
+/* =========================================================
+   DESENHO FANTASMA
+========================================================= */
+
+function drawGhost(
+    ghost
+) {
+
+    ctx.save();
+
+    ctx.translate(
+        ghost.x,
+        ghost.y
+    );
+
+    let color =
+        ghost.color;
+
+    if (
+        ghost.mode ===
+        'scared'
+    ) {
+
+        const blinking =
+            powerTimer < 2.5 &&
+            Math.floor(
+                powerTimer * 8
+            ) % 2 === 0;
+
+        color =
+            blinking
+                ? '#ffffff'
+                : '#1e40af';
+    }
+
+    const radius =
+        8;
+
+    /*
+     * Corpo.
+     */
+
+    ctx.beginPath();
+
+    ctx.arc(
+        0,
+        -2,
+        radius,
+        Math.PI,
+        0
+    );
+
+    ctx.lineTo(
+        radius,
+        radius
+    );
+
+    ctx.lineTo(
+        radius / 2,
+        radius - 2
+    );
+
+    ctx.lineTo(
+        0,
+        radius
+    );
+
+    ctx.lineTo(
+        -radius / 2,
+        radius - 2
+    );
+
+    ctx.lineTo(
+        -radius,
+        radius
+    );
+
+    ctx.closePath();
+
+    ctx.fillStyle =
+        color;
+
+    ctx.shadowColor =
+        color;
+
+    ctx.shadowBlur =
+        8;
+
+    ctx.fill();
+
+    ctx.shadowBlur =
+        0;
+
+    /*
+     * Olhos.
+     */
+
+    if (
+        ghost.mode !==
+        'scared'
+    ) {
+
+        ctx.fillStyle =
+            '#fff';
+
+        ctx.beginPath();
+
+        ctx.arc(
+            -3,
+            -3,
+            3,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.arc(
+            3,
+            -3,
+            3,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+        ctx.fillStyle =
+            '#030309';
+
+        ctx.beginPath();
+
+        ctx.arc(
+            -3 +
+            ghost.dir.x * 1.2,
+
+            -3 +
+            ghost.dir.y * 1.2,
+
+            1.3,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.arc(
+            3 +
+            ghost.dir.x * 1.2,
+
+            -3 +
+            ghost.dir.y * 1.2,
+
+            1.3,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+    } else {
+
+        ctx.strokeStyle =
+            '#fff';
+
+        ctx.lineWidth =
+            1.5;
+
+        ctx.beginPath();
+
+        ctx.moveTo(-4,-3);
+        ctx.lineTo(-2,-1);
+        ctx.lineTo(-4,1);
+
+        ctx.moveTo(4,-3);
+        ctx.lineTo(2,-1);
+        ctx.lineTo(4,1);
+
+        ctx.stroke();
+    }
+
+    ctx.restore();
+}
+
+
+/* =========================================================
+   DRAW
+========================================================= */
+
+function draw() {
+
+    ctx.clearRect(
+        0,
+        0,
+        WIDTH,
+        HEIGHT
+    );
+
+    ctx.fillStyle =
+        '#030309';
+
+    ctx.fillRect(
+        0,
+        0,
+        WIDTH,
+        HEIGHT
+    );
+
+    drawMap();
+
+    drawPacman();
+
+    ghosts.forEach(
+        drawGhost
+    );
+}
+
+
+/* =========================================================
+   GAME LOOP
+========================================================= */
+
+let lastTime =
+    performance.now();
+
+
+function gameLoop(timestamp) {
+
+    let dt =
+        (timestamp - lastTime) /
+        1000;
+
+    lastTime =
+        timestamp;
+
+    /*
+     * Evita explosão de velocidade
+     * quando a aba volta do background.
+     */
+
+    dt =
+        Math.min(
+            Math.max(dt, 0),
+            .05
+        );
+
+    update(dt);
+
+    draw();
+
+    requestAnimationFrame(
+        gameLoop
+    );
+}
+
+
+/* =========================================================
+   VISIBILIDADE
+========================================================= */
+
+document.addEventListener(
+    'visibilitychange',
+    () => {
+
+        if (
+            document.hidden &&
+            gameState ===
+            'PLAYING'
+        ) {
+
+            togglePause();
+        }
+    }
+);
+
+
+/* =========================================================
+   RESPONSIVIDADE
+========================================================= */
+
+function resizeCanvas() {
+
+    const maxWidth =
+        Math.min(
+            380,
+            Math.max(
+                280,
+                window.innerWidth - 28
+            )
+        );
+
+    canvas.style.width =
+        `${maxWidth}px`;
+
+    canvas.style.height =
+        `${maxWidth *
+        HEIGHT /
+        WIDTH}px`;
+}
+
+
+window.addEventListener(
+    'resize',
+    resizeCanvas
+);
+
+
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
+
+initGame();
+
+resizeCanvas();
+
+draw();
+
+showOverlay(
+    'PAC-MAN TECH',
+
+    'Colete todos os nodes, use as setas ou WASD e fuja dos firewalls.',
+
+    'INICIALIZAR SISTEMA'
+);
+
+
+/* =========================================================
+   INICIA LOOP UMA ÚNICA VEZ
+========================================================= */
+
+requestAnimationFrame(
+    gameLoop
+);
+
+</script>
+
+</body>
+</html>
