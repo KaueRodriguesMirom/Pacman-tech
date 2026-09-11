@@ -804,37 +804,34 @@ function resetPositions() {
     pacman.nextDy = 0;
 
     const starts = [
+    {
+        x: 9,
+        y: 10,
+        dx: 0,
+        dy: -1.5
+    },
 
-        {
-            x: 9,
-            y: 9,
-            dx: 0,
-            dy: -1.5
-        },
+    {
+        x: 8,
+        y: 10,
+        dx: 0,
+        dy: -1.5
+    },
 
-        {
-            x: 9,
-            y: 10,
-            dx: 1.5,
-            dy: 0
-        },
+    {
+        x: 10,
+        y: 10,
+        dx: 0,
+        dy: -1.5
+    },
 
-        {
-            x: 8,
-            y: 10,
-            dx: -1.5,
-            dy: 0
-        },
-
-        {
-            x: 10,
-            y: 10,
-            dx: 0,
-            dy: 1.5
-        }
-
-    ];
-
+    {
+        x: 9,
+        y: 9,
+        dx: 0,
+        dy: -1.5
+    }
+];
     ghosts.forEach((ghost, index) => {
 
         const start = starts[index];
@@ -1435,13 +1432,116 @@ function updateGhost(ghost) {
     const speed =
         ghost.mode === 'scared'
             ? 1.05
-            : 1.5 +
-              Math.min(level - 1, 3) * 0.12;
+            : 1.5 + Math.min(level - 1, 3) * 0.12;
 
     /*
-        Quando chegar ao centro da célula,
-        escolhe uma nova direção.
-    */
+     * =====================================================
+     * SAÍDA DA CASA DOS FANTASMAS
+     * =====================================================
+     *
+     * Enquanto estiver dentro da região da casa,
+     * o fantasma primeiro procura chegar ao corredor
+     * central e depois começa a IA normal.
+     */
+
+    const tile = getTileFromCenter(ghost.x, ghost.y);
+
+    if (tile) {
+
+        const insideGhostHouse =
+            tile.r >= 8 &&
+            tile.r <= 12 &&
+            tile.c >= 7 &&
+            tile.c <= 11;
+
+        if (insideGhostHouse && ghost.mode !== 'scared') {
+
+            /*
+             * Objetivo: sair pela abertura central.
+             *
+             * A abertura fica aproximadamente em:
+             * coluna 9 / linha 8
+             */
+
+            const targetX =
+                9 * tileSize + tileSize / 2;
+
+            const targetY =
+                7 * tileSize + tileSize / 2;
+
+            /*
+             * Se estiver abaixo do centro,
+             * sobe primeiro.
+             */
+
+            if (ghost.y > targetY + 2) {
+
+                const nextY =
+                    ghost.y - speed;
+
+                if (
+                    canMove(
+                        ghost.x,
+                        nextY,
+                        5
+                    )
+                ) {
+
+                    ghost.dx = 0;
+                    ghost.dy = -speed;
+
+                    ghost.y = nextY;
+
+                    return;
+                }
+            }
+
+            /*
+             * Se precisar alinhar horizontalmente,
+             * vai para a coluna central.
+             */
+
+            if (
+                Math.abs(
+                    ghost.x - targetX
+                ) > 2
+            ) {
+
+                const direction =
+                    ghost.x < targetX
+                        ? 1
+                        : -1;
+
+                const nextX =
+                    ghost.x +
+                    direction * speed;
+
+                if (
+                    canMove(
+                        nextX,
+                        ghost.y,
+                        5
+                    )
+                ) {
+
+                    ghost.dx =
+                        direction * speed;
+
+                    ghost.dy = 0;
+
+                    ghost.x = nextX;
+
+                    return;
+                }
+            }
+        }
+    }
+
+    /*
+     * =====================================================
+     * IA NORMAL
+     * =====================================================
+     */
 
     if (
         isCentered(
@@ -1457,16 +1557,14 @@ function updateGhost(ghost) {
     }
 
     /*
-        Movimento
-    */
+     * Movimento
+     */
 
     const nextX =
-        ghost.x +
-        ghost.dx;
+        ghost.x + ghost.dx;
 
     const nextY =
-        ghost.y +
-        ghost.dy;
+        ghost.y + ghost.dy;
 
     if (
         canMove(
@@ -1482,21 +1580,23 @@ function updateGhost(ghost) {
     } else {
 
         /*
-            Encontrou parede.
-            Escolhe imediatamente outra direção.
-        */
+         * Bateu na parede.
+         * Recalcula imediatamente.
+         */
 
         snapToGrid(ghost);
 
         chooseGhostDirection(ghost);
 
+        /*
+         * Tenta novamente.
+         */
+
         const retryX =
-            ghost.x +
-            ghost.dx;
+            ghost.x + ghost.dx;
 
         const retryY =
-            ghost.y +
-            ghost.dy;
+            ghost.y + ghost.dy;
 
         if (
             canMove(
@@ -1512,9 +1612,9 @@ function updateGhost(ghost) {
         } else {
 
             /*
-                Fallback de segurança:
-                tenta qualquer direção válida.
-            */
+             * Fallback extremamente seguro:
+             * procura qualquer direção disponível.
+             */
 
             const directions = [
                 { dx: 1, dy: 0 },
@@ -1528,22 +1628,23 @@ function updateGhost(ghost) {
                 if (
                     canMove(
                         ghost.x +
-                        direction.dx * 5,
+                        direction.dx * speed,
 
                         ghost.y +
-                        direction.dy * 5,
+                        direction.dy * speed,
 
                         5
                     )
                 ) {
 
                     ghost.dx =
-                        direction.dx *
-                        speed;
+                        direction.dx * speed;
 
                     ghost.dy =
-                        direction.dy *
-                        speed;
+                        direction.dy * speed;
+
+                    ghost.x += ghost.dx;
+                    ghost.y += ghost.dy;
 
                     break;
                 }
@@ -1552,11 +1653,14 @@ function updateGhost(ghost) {
     }
 
     /*
-        Túnel lateral
-    */
+     * =====================================================
+     * TÚNEL
+     * =====================================================
+     */
 
     if (
-        ghost.x < -tileSize / 2
+        ghost.x <
+        -tileSize / 2
     ) {
 
         ghost.x =
