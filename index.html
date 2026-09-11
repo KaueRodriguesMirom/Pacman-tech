@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Pac-Man Tech Pro - Arcade Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        arcade: ['"Press Start 2P"', 'monospace'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        arcadeDark: '#030309',
+                        arcadePanel: '#0a0a16',
+                        arcadeBorder: '#00f2fe',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #010104;
+            color: #f3f4f6;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .arcade-glow {
+            box-shadow: 0 0 40px rgba(0, 242, 254, 0.25), inset 0 0 25px rgba(0, 242, 254, 0.1);
+        }
+        .text-glow {
+            text-shadow: 0 0 12px rgba(0, 242, 254, 0.8);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #030309;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #00f2fe;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-2 sm:p-4 overflow-x-hidden">
+
+    <header class="w-full max-w-4xl flex flex-col sm:flex-row items-center justify-between bg-arcadePanel border border-[#00f2fe]/40 rounded-2xl p-4 shadow-xl mb-3 gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/50 animate-pulse">
+                <span class="text-white font-arcade text-lg">P</span>
+            </div>
+            <div>
+                <h1 class="font-arcade text-sm sm:text-lg text-cyan-400 text-glow tracking-wider">PAC-MAN TECH</h1>
+                <p class="text-xs text-cyan-300/70">Grid CibernÃ©tico v3.0</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-6 bg-arcadeDark px-5 py-2.5 rounded-xl border border-[#00f2fe]/30">
+            <div class="text-center">
+                <div class="text-[9px] uppercase font-semibold text-cyan-400 font-arcade">Pontos</div>
+                <div id="scoreDisplay" class="font-arcade text-sm sm:text-base text-white">0</div>
+            </div>
+            <div class="w-[1px] h-8 bg-cyan-500/30"></div>
+            <div class="text-center">
+                <div class="text-[9px] uppercase font-semibold text-cyan-400 font-arcade">Recorde</div>
+                <div id="highScoreDisplay" class="font-arcade text-sm sm:text-base text-teal-300">0</div>
+            </div>
+            <div class="w-[1px] h-8 bg-cyan-500/30"></div>
+            <div class="text-center">
+                <div class="text-[9px] uppercase font-semibold text-cyan-400 font-arcade">Vidas</div>
+                <div id="livesDisplay" class="flex items-center gap-1.5 mt-1 justify-center"></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="w-full max-w-4xl flex flex-col items-center relative flex-grow justify-center my-auto">
+        <div id="messageOverlay" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/85 backdrop-blur-md rounded-2xl transition-all duration-300">
+            <div class="bg-arcadePanel border-2 border-[#00f2fe] p-6 sm:p-8 rounded-2xl shadow-2xl flex flex-col items-center text-center max-w-md arcade-glow">
+                <h2 id="overlayTitle" class="font-arcade text-xl sm:text-2xl text-cyan-400 mb-3 text-glow">PAC-MAN TECH</h2>
+                <p id="overlayText" class="text-slate-300 text-sm sm:text-base mb-6 leading-relaxed">
+                    Navegue pelo grid cibernÃ©tico avanÃ§ado, colete os nodes de dados e desvie dos firewalls maliciosos!
+                </p>
+                <button id="startButton" class="w-full py-3.5 px-6 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-arcade text-xs sm:text-sm rounded-xl shadow-lg shadow-cyan-500/40 transform transition active:scale-95 cursor-pointer">
+                    INICIALIZAR SISTEMA
+                </button>
+            </div>
+        </div>
+
+        <div class="relative bg-arcadeDark border-2 border-[#00f2fe]/60 rounded-2xl p-2 sm:p-3 shadow-2xl arcade-glow flex items-center justify-center">
+            <canvas id="gameCanvas" class="rounded-xl block max-w-full h-auto"></canvas>
+        </div>
+    </main>
+
+    <footer class="w-full max-w-4xl mt-3 flex flex-col sm:flex-row items-center justify-between gap-4 bg-arcadePanel border border-[#00f2fe]/40 rounded-2xl p-3 text-xs text-slate-400">
+        <div class="hidden sm:flex items-center gap-4">
+            <span class="flex items-center gap-1.5"><kbd class="px-2 py-1 bg-arcadeDark border border-cyan-500/40 rounded text-cyan-300 font-arcade text-[10px]">W A S D</kbd> ou <kbd class="px-2 py-1 bg-arcadeDark border border-cyan-500/40 rounded text-cyan-300 font-arcade text-[10px]">Setas</kbd> para mover</span>
+            <span class="flex items-center gap-1.5"><kbd class="px-2 py-1 bg-arcadeDark border border-cyan-500/40 rounded text-cyan-300 font-arcade text-[10px]">ESC</kbd> Pausar</span>
+        </div>
+
+        <!-- D-Pad otimizado e fixado para dispositivos mÃ³veis e toque -->
+        <div class="grid grid-cols-3 gap-2 w-40 mx-auto sm:hidden my-1">
+            <div></div>
+            <button id="btnUp" class="p-4 bg-arcadeDark border border-cyan-500 rounded-xl text-cyan-400 flex items-center justify-center active:bg-cyan-500 active:text-black text-xl font-bold shadow-md shadow-cyan-500/20">â²</button>
+            <div></div>
+            <button id="btnLeft" class="p-4 bg-arcadeDark border border-cyan-500 rounded-xl text-cyan-400 flex items-center justify-center active:bg-cyan-500 active:text-black text-xl font-bold shadow-md shadow-cyan-500/20">â</button>
+            <button id="btnDown" class="p-4 bg-arcadeDark border border-cyan-500 rounded-xl text-cyan-400 flex items-center justify-center active:bg-cyan-500 active:text-black text-xl font-bold shadow-md shadow-cyan-500/20">â¼</button>
+            <button id="btnRight" class="p-4 bg-arcadeDark border border-cyan-500 rounded-xl text-cyan-400 flex items-center justify-center active:bg-cyan-500 active:text-black text-xl font-bold shadow-md shadow-cyan-500/20">â¶</button>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button id="pauseButton" class="px-4 py-2 bg-arcadeDark hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition cursor-pointer">Pausar</button>
+            <button id="soundButton" class="px-4 py-2 bg-arcadeDark hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition cursor-pointer">ð Som: ON</button>
+        </div>
+    </footer>
+
+    <script>
+        class SoundFX {
+            constructor() {
+                this.enabled = true;
+                this.ctx = null;
+            }
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+            playChomp() {
+                if (!this.enabled) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(360, this.ctx.currentTime + 0.04);
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.04);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.04);
+            }
+            playPowerPellet() {
+                if (!this.enabled) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(440, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.15);
+            }
+            playEatGhost() {
+                if (!this.enabled) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(250, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(750, this.ctx.currentTime + 0.25);
+                gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.25);
+            }
+            playDeath() {
+                if (!this.enabled) return;
+                this.init();
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(60, this.ctx.currentTime + 0.5);
+                gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.5);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.5);
+            }
+            playWin() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                [350, 500, 650, 850].forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(freq, now + i * 0.1);
+                    gain.gain.setValueAtTime(0.12, now + i * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.08);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + i * 0.1);
+                    osc.stop(now + i * 0.1 + 0.08);
+                });
+            }
+        }
+
+        const soundFX = new SoundFX();
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Mapa Tech Futurista: 1 = Barreira Cyber, 0 = Data Node, 2 = Caminho Livre, 3 = Core Booster (Power Pellet), 4 = Porta Firewall
+        const initialMap = [
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,3,1],
+            [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+            [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1],
+            [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+            [1,1,1,1,0,1,1,1,2,1,2,1,1,1,0,1,1,1,1],
+            [2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2],
+            [1,1,1,1,0,1,2,1,1,4,1,1,2,1,0,1,1,1,1],
+            [2,2,2,2,0,2,2,1,2,2,2,1,2,2,0,2,2,2,2],
+            [1,1,1,1,0,1,2,1,1,1,1,1,2,1,0,1,1,1,1],
+            [2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2],
+            [1,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1],
+            [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+            [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+            [1,3,0,1,0,0,0,0,0,2,0,0,0,0,0,1,0,3,1],
+            [1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1],
+            [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+            [1,0,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,0,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+        ];
+
+        let map = [];
+        const tileSize = 24;
+        const cols = initialMap[0].length;
+        const rows = initialMap.length;
+
+        canvas.width = cols * tileSize;
+        canvas.height = rows * tileSize;
+
+        let score = 0;
+        let highScore = localStorage.getItem('pacman_tech_pro_highscore') || 0;
+        let lives = 3;
+        let gameState = 'START';
+        let powerTimer = 0;
+        let pelletsLeft = 0;
+
+        let pacman = {
+            x: 9 * tileSize,
+            y: 16 * tileSize,
+            dx: 0,
+            dy: 0,
+            nextDx: 0,
+            nextDy: 0,
+            speed: 2,
+            radius: tileSize / 2 - 2,
+            mouthAngle: 0.2,
+            mouthSpeed: 0.02
+        };
+
+        let ghosts = [
+            { x: 9 * tileSize, y: 9 * tileSize, color: '#ef4444', dx: 0, dy: -2, mode: 'chase' },
+            { x: 9 * tileSize, y: 10 * tileSize, color: '#ec4899', dx: 2, dy: 0, mode: 'chase' },
+            { x: 8 * tileSize, y: 10 * tileSize, color: '#00f2fe', dx: -2, dy: 0, mode: 'chase' },
+            { x: 10 * tileSize, y: 10 * tileSize, color: '#fb923c', dx: 0, dy: 2, mode: 'chase' }
+        ];
+
+        function initGame() {
+            map = JSON.parse(JSON.stringify(initialMap));
+            score = 0;
+            lives = 3;
+            pelletsLeft = 0;
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    if (map[r][c] === 0 || map[r][c] === 3) pelletsLeft++;
+                }
+            }
+            resetPositions();
+            updateUI();
+        }
+
+        function resetPositions() {
+            pacman.x = 9 * tileSize;
+            pacman.y = 16 * tileSize;
+            pacman.dx = 0;
+            pacman.dy = 0;
+            pacman.nextDx = 0;
+            pacman.nextDy = 0;
+
+            const ghostStarts = [
+                { x: 9, y: 9, dx: 0, dy: -2 },
+                { x: 9, y: 10, dx: 2, dy: 0 },
+                { x: 8, y: 10, dx: -2, dy: 0 },
+                { x: 10, y: 10, dx: 0, dy: 2 }
+            ];
+
+            ghosts.forEach((ghost, i) => {
+                ghost.x = ghostStarts[i].x * tileSize;
+                ghost.y = ghostStarts[i].y * tileSize;
+                ghost.dx = ghostStarts[i].dx;
+                ghost.dy = ghostStarts[i].dy;
+                ghost.mode = 'chase';
+            });
+            powerTimer = 0;
+        }
+
+        function updateUI() {
+            document.getElementById('scoreDisplay').innerText = score;
+            document.getElementById('highScoreDisplay').innerText = highScore;
+            
+            const livesContainer = document.getElementById('livesDisplay');
+            livesContainer.innerHTML = '';
+            for (let i = 0; i < lives; i++) {
+                const lifeIcon = document.createElement('div');
+                lifeIcon.className = 'w-3.5 h-3.5 rounded bg-cyan-400 shadow-sm shadow-cyan-500/50';
+                livesContainer.appendChild(lifeIcon);
+            }
+        }
+
+        function isWall(pixelX, pixelY, radius = 6) {
+            const corners = [
+                { x: pixelX - radius, y: pixelY - radius },
+                { x: pixelX + radius, y: pixelY - radius },
+                { x: pixelX - radius, y: pixelY + radius },
+                { x: pixelX + radius, y: pixelY + radius }
+            ];
+
+            for (let corner of corners) {
+                const c = Math.floor(corner.x / tileSize);
+                const r = Math.floor(corner.y / tileSize);
+                if (r < 0 || r >= rows || c < 0 || c >= cols) return true;
+                if (map[r][c] === 1) return true;
+            }
+            return false;
+        }
+
+        function getTile(pixelX, pixelY) {
+            const c = Math.floor((pixelX + tileSize / 2) / tileSize);
+            const r = Math.floor((pixelY + tileSize / 2) / tileSize);
+            if (r < 0 || r >= rows || c < 0 || c >= cols) return null;
+            return {r, c};
+        }
+
+        function update() {
+            if (gameState !== 'PLAYING') return;
+
+            if (powerTimer > 0) {
+                powerTimer--;
+                if (powerTimer === 0) {
+                    ghosts.forEach(g => { if (g.mode === 'scared') g.mode = 'chase'; });
+                }
+            }
+
+            // MovimentaÃ§Ã£o alinhada ao grid
+            if (pacman.x % tileSize === 0 && pacman.y % tileSize === 0) {
+                const currentTile = getTile(pacman.x, pacman.y);
+                
+                if (currentTile) {
+                    const tileVal = map[currentTile.r][currentTile.c];
+                    if (tileVal === 0) {
+                        map[currentTile.r][currentTile.c] = 2;
+                        score += 10;
+                        pelletsLeft--;
+                        soundFX.playChomp();
+                        checkWin();
+                    } else if (tileVal === 3) {
+                        map[currentTile.r][currentTile.c] = 2;
+                        score += 50;
+                        pelletsLeft--;
+                        powerTimer = 400;
+                        ghosts.forEach(g => {
+                            g.mode = 'scared';
+                            g.dx = -g.dx;
+                            g.dy = -g.dy;
+                        });
+                        soundFX.playPowerPellet();
+                        checkWin();
+                    }
+                }
+
+                // Tenta aplicar a prÃ³xima direÃ§Ã£o solicitada
+                if (pacman.nextDx !== 0 || pacman.nextDy !== 0) {
+                    if (!isWall(pacman.x + pacman.nextDx * 4, pacman.y + pacman.nextDy * 4, 8)) {
+                        pacman.dx = pacman.nextDx;
+                        pacman.dy = pacman.nextDy;
+                    }
+                }
+                if (isWall(pacman.x + pacman.dx * 4, pacman.y + pacman.dy * 4, 8)) {
+                    pacman.dx = 0;
+                    pacman.dy = 0;
+                }
+            }
+
+            pacman.x += pacman.dx;
+            pacman.y += pacman.dy;
+
+            // TÃºneis de teletransporte lateral
+            if (pacman.x < -tileSize / 2) pacman.x = canvas.width - tileSize / 2;
+            else if (pacman.x > canvas.width - tileSize / 2) pacman.x = -tileSize / 2;
+
+            pacman.mouthAngle += pacman.mouthSpeed;
+            if (pacman.mouthAngle > 0.4 || pacman.mouthAngle < 0.05) {
+                pacman.mouthSpeed = -pacman.mouthSpeed;
+            }
+
+            // IA dos Fantasmas (Firewalls)
+            ghosts.forEach(ghost => {
+                const speed = ghost.mode === 'scared' ? 1 : 1.5;
+                
+                if (ghost.x % tileSize === 0 && ghost.y % tileSize === 0) {
+                    const possibleDirs = [
+                        {dx: 0, dy: -speed},
+                        {dx: 0, dy: speed},
+                        {dx: -speed, dy: 0},
+                        {dx: speed, dy: 0}
+                    ].filter(d => {
+                        if (d.dx === -ghost.dx && d.dy === -ghost.dy) return false;
+                        return !isWall(ghost.x + d.dx * 4, ghost.y + d.dy * 4, 6);
+                    });
+
+                    if (possibleDirs.length === 0) {
+                        possibleDirs.push({dx: -ghost.dx, dy: -ghost.dy});
+                    }
+
+                    let chosenDir;
+                    if (ghost.mode === 'scared' || Math.random() < 0.35) {
+                        chosenDir = possibleDirs[Math.floor(Math.random() * possibleDirs.length)];
+                    } else {
+                        possibleDirs.sort((a, b) => {
+                            const distA = Math.hypot((ghost.x + a.dx * 10) - pacman.x, (ghost.y + a.dy * 10) - pacman.y);
+                            const distB = Math.hypot((ghost.x + b.dx * 10) - pacman.x, (ghost.y + b.dy * 10) - pacman.y);
+                            return distA - distB;
+                        });
+                        chosenDir = possibleDirs[0];
+                    }
+
+                    ghost.dx = chosenDir.dx;
+                    ghost.dy = chosenDir.dy;
+                }
+
+                ghost.x += ghost.dx;
+                ghost.y += ghost.dy;
+
+                if (ghost.x < -tileSize / 2) ghost.x = canvas.width - tileSize / 2;
+                else if (ghost.x > canvas.width - tileSize / 2) ghost.x = -tileSize / 2;
+
+                const distance = Math.hypot(pacman.x - ghost.x, pacman.y - ghost.y);
+                if (distance < tileSize / 1.5) {
+                    if (ghost.mode === 'scared') {
+                        ghost.x = 9 * tileSize;
+                        ghost.y = 10 * tileSize;
+                        ghost.mode = 'chase';
+                        score += 200;
+                        soundFX.playEatGhost();
+                        updateUI();
+                    } else {
+                        lives--;
+                        soundFX.playDeath();
+                        updateUI();
+                        if (lives <= 0) {
+                            gameOver();
+                        } else {
+                            resetPositions();
+                        }
+                    }
+                }
+            });
+
+            updateUI();
+        }
+
+        function draw() {
+            ctx.fillStyle = '#030309';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // RenderizaÃ§Ã£o do Labirinto Tech (Neon CibernÃ©tico)
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const tile = map[r][c];
+                    const x = c * tileSize;
+                    const y = r * tileSize;
+
+                    if (tile === 1) {
+                        ctx.fillStyle = '#060d26';
+                        ctx.strokeStyle = '#00f2fe';
+                        ctx.lineWidth = 1.5;
+                        ctx.fillRect(x, y, tileSize, tileSize);
+                        ctx.strokeRect(x, y, tileSize, tileSize);
+                        
+                        // NÃ³ de circuito interno decorativo
+                        ctx.strokeStyle = '#0284c7';
+                        ctx.beginPath();
+                        ctx.arc(x + tileSize/2, y + tileSize/2, 2.5, 0, Math.PI * 2);
+                        ctx.stroke();
+                    } else if (tile === 0) {
+                        ctx.beginPath();
+                        ctx.arc(x + tileSize / 2, y + tileSize / 2, 3, 0, Math.PI * 2);
+                        ctx.fillStyle = '#38bdf8';
+                        ctx.shadowColor = '#38bdf8';
+                        ctx.shadowBlur = 6;
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                        ctx.closePath();
+                    } else if (tile === 3) {
+                        const pulse = Math.floor(Date.now() / 250) % 2 === 0;
+                        if (pulse) {
+                            ctx.beginPath();
+                            ctx.arc(x + tileSize / 2, y + tileSize / 2, 7.5, 0, Math.PI * 2);
+                            ctx.fillStyle = '#00f2fe';
+                            ctx.shadowColor = '#00f2fe';
+                            ctx.shadowBlur = 14;
+                            ctx.fill();
+                            ctx.shadowBlur = 0;
+                            ctx.closePath();
+                        }
+                    }
+                }
+            }
+
+            // RenderizaÃ§Ã£o do Pac-Man Tech
+            ctx.save();
+            ctx.translate(pacman.x + tileSize / 2, pacman.y + tileSize / 2);
+            
+            let rotation = 0;
+            if (pacman.dx > 0) rotation = 0;
+            else if (pacman.dx < 0) rotation = Math.PI;
+            else if (pacman.dy > 0) rotation = Math.PI / 2;
+            else if (pacman.dy < 0) rotation = -Math.PI / 2;
+            ctx.rotate(rotation);
+
+            ctx.beginPath();
+            ctx.arc(0, 0, pacman.radius, pacman.mouthAngle, Math.PI * 2 - pacman.mouthAngle);
+            ctx.lineTo(0, 0);
+            ctx.fillStyle = '#00f2fe';
+            ctx.shadowColor = '#00f2fe';
+            ctx.shadowBlur = 12;
+            ctx.fill();
+            ctx.closePath();
+            ctx.restore();
+
+            // RenderizaÃ§Ã£o dos Fantasmas (Firewalls)
+            ghosts.forEach(ghost => {
+                ctx.save();
+                ctx.translate(ghost.x + tileSize / 2, ghost.y + tileSize / 2);
+
+                const ghostColor = ghost.mode === 'scared' ? (powerTimer < 100 && Math.floor(powerTimer / 15) % 2 === 0 ? '#ffffff' : '#1e3a8a') : ghost.color;
+
+                ctx.beginPath();
+                ctx.arc(0, -2, pacman.radius, Math.PI, 0, false);
+                ctx.lineTo(pacman.radius, pacman.radius);
+                ctx.lineTo(-pacman.radius, pacman.radius);
+                ctx.fillStyle = ghostColor;
+                ctx.shadowColor = ghostColor;
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.closePath();
+
+                // Olhos Ãpticos Tech
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.arc(-4, -4, 3.5, 0, Math.PI * 2);
+                ctx.arc(4, -4, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.closePath();
+
+                ctx.fillStyle = '#030309';
+                ctx.beginPath();
+                ctx.arc(-4 + (ghost.dx > 0 ? 1 : ghost.dx < 0 ? -1 : 0), -4 + (ghost.dy > 0 ? 1 : ghost.dy < 0 ? -1 : 0), 1.5, 0, Math.PI * 2);
+                ctx.arc(4 + (ghost.dx > 0 ? 1 : ghost.dx < 0 ? -1 : 0), -4 + (ghost.dy > 0 ? 1 : ghost.dy < 0 ? -1 : 0), 1.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.closePath();
+
+                ctx.restore();
+            });
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            if (gameState === 'PLAYING') {
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        function checkWin() {
+            if (pelletsLeft <= 0) {
+                gameState = 'WIN';
+                soundFX.playWin();
+                showOverlay('SISTEMA LIMPO', 'ParabÃ©ns! Todos os nodes de dados coletados com sucesso!', 'REINICIAR SISTEMA');
+            }
+        }
+
+        function gameOver() {
+            gameState = 'GAMEOVER';
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('pacman_tech_pro_highscore', highScore);
+            }
+            soundFX.playDeath();
+            showOverlay('FALHA DE SEGURANÃA', `Capturado pelos firewalls! PontuaÃ§Ã£o: ${score}`, 'TENTAR NOVAMENTE');
+        }
+
+        function showOverlay(title, text, buttonText) {
+            const overlay = document.getElementById('messageOverlay');
+            document.getElementById('overlayTitle').innerText = title;
+            document.getElementById('overlayText').innerText = text;
+            document.getElementById('startButton').innerText = buttonText;
+            overlay.classList.remove('opacity-0', 'pointer-events-none');
+            overlay.classList.add('opacity-100', 'pointer-events-auto');
+        }
+
+        function hideOverlay() {
+            const overlay = document.getElementById('messageOverlay');
+            overlay.classList.remove('opacity-100', 'pointer-events-auto');
+            overlay.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        // Controles por Teclado
+        window.addEventListener('keydown', e => {
+            soundFX.init();
+            if (['ArrowUp', 'KeyW'].includes(e.code)) {
+                pacman.nextDx = 0; pacman.nextDy = -2; e.preventDefault();
+            } else if (['ArrowDown', 'KeyS'].includes(e.code)) {
+                pacman.nextDx = 0; pacman.nextDy = 2; e.preventDefault();
+            } else if (['ArrowLeft', 'KeyA'].includes(e.code)) {
+                pacman.nextDx = -2; pacman.nextDy = 0; e.preventDefault();
+            } else if (['ArrowRight', 'KeyD'].includes(e.code)) {
+                pacman.nextDx = 2; pacman.nextDy = 0; e.preventDefault();
+            } else if (e.code === 'Escape') {
+                togglePause();
+            }
+        });
+
+        // Controles TÃ¡teis e Mouse aprimorados para os botÃµes do D-Pad
+        const bindTouchControl = (elementId, dx, dy) => {
+            const el = document.getElementById(elementId);
+            const triggerMove = (e) => {
+                e.preventDefault();
+                soundFX.init();
+                pacman.nextDx = dx;
+                pacman.nextDy = dy;
+            };
+            el.addEventListener('pointerdown', triggerMove);
+            el.addEventListener('touchstart', triggerMove, { passive: false });
+        };
+
+        bindTouchControl('btnUp', 0, -2);
+        bindTouchControl('btnDown', 0, 2);
+        bindTouchControl('btnLeft', -2, 0);
+        bindTouchControl('btnRight', 2, 0);
+
+        document.getElementById('startButton').addEventListener('click', () => {
+            soundFX.init();
+            initGame();
+            gameState = 'PLAYING';
+            hideOverlay();
+            requestAnimationFrame(gameLoop);
+        });
+
+        function togglePause() {
+            if (gameState === 'PLAYING') {
+                gameState = 'PAUSED';
+                showOverlay('SISTEMA PAUSADO', 'Processo em espera. Retome quando estiver pronto.', 'RETOMAR');
+            } else if (gameState === 'PAUSED') {
+                gameState = 'PLAYING';
+                hideOverlay();
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        document.getElementById('pauseButton').addEventListener('click', togglePause);
+
+        const soundBtn = document.getElementById('soundButton');
+        soundBtn.addEventListener('click', () => {
+            soundFX.enabled = !soundFX.enabled;
+            soundBtn.innerText = soundFX.enabled ? 'ð Som: ON' : 'ð Som: OFF';
+        });
+
+        // RenderizaÃ§Ã£o inicial
+        initGame();
+        draw();
+    </script>
+</body>
+</html>
