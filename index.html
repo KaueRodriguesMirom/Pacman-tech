@@ -85,12 +85,12 @@ button {
     header {
         transform: scale(.92);
         transform-origin: top center;
-        margin-bottom: -6px !important;
+        margin-bottom: -4px !important;
     }
     footer {
         transform: scale(.9);
         transform-origin: bottom center;
-        margin-top: -6px !important;
+        margin-top: -4px !important;
     }
 }
 </style>
@@ -106,7 +106,7 @@ button {
             </div>
             <div>
                 <h1 class="font-arcade text-xs text-cyan-400 text-glow tracking-wider">PAC-MAN TECH</h1>
-                <p class="text-[9px] text-cyan-300/70">Cyber Arcade v6.9</p>
+                <p class="text-[9px] text-cyan-300/70">Cyber Arcade v7.0</p>
             </div>
         </div>
 
@@ -136,7 +136,6 @@ button {
 </header>
 
 <main class="w-full max-w-md flex flex-col items-center relative flex-grow justify-center my-1">
-    <!-- Overlay com display flex inicial e transição segura -->
     <div id="messageOverlay" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-md rounded-2xl p-4">
         <div class="bg-[#0a0a16] border-2 border-[#00f2fe] p-4 rounded-2xl shadow-2xl flex flex-col items-center text-center max-w-xs arcade-glow w-full">
             <h2 id="overlayTitle" class="font-arcade text-sm text-cyan-400 mb-2 text-glow">PAC-MAN TECH</h2>
@@ -145,9 +144,9 @@ button {
             <div id="mapSelectionContainer" class="w-full flex flex-col gap-2 mb-4">
                 <div class="text-[9px] font-arcade text-cyan-300 uppercase text-left">Selecionar Mapa:</div>
                 <div class="grid grid-cols-3 gap-1.5">
-                    <button type="button" onclick="selectMap(0)" id="mapBtn0" class="py-2 px-1 bg-cyan-950/80 border border-cyan-400 rounded-lg text-[9px] font-arcade text-cyan-300 transition shadow-md shadow-cyan-500/30">Grid 1</button>
-                    <button type="button" onclick="selectMap(1)" id="mapBtn1" class="py-2 px-1 bg-[#030309] border border-cyan-500/40 rounded-lg text-[9px] font-arcade text-slate-400 hover:bg-cyan-500 hover:text-black transition">Núcleo 2</button>
-                    <button type="button" onclick="selectMap(2)" id="mapBtn2" class="py-2 px-1 bg-[#030309] border border-cyan-500/40 rounded-lg text-[9px] font-arcade text-slate-400 hover:bg-cyan-500 hover:text-black transition">Servidor 3</button>
+                    <button type="button" id="mapBtn0" class="py-2 px-1 bg-cyan-950/80 border border-cyan-400 rounded-lg text-[9px] font-arcade text-cyan-300 transition shadow-md shadow-cyan-500/30">Grid 1</button>
+                    <button type="button" id="mapBtn1" class="py-2 px-1 bg-[#030309] border border-cyan-500/40 rounded-lg text-[9px] font-arcade text-slate-400 hover:bg-cyan-500 hover:text-black transition">Núcleo 2</button>
+                    <button type="button" id="mapBtn2" class="py-2 px-1 bg-[#030309] border border-cyan-500/40 rounded-lg text-[9px] font-arcade text-slate-400 hover:bg-cyan-500 hover:text-black transition">Servidor 3</button>
                 </div>
             </div>
 
@@ -188,7 +187,7 @@ button {
             <button id="pauseButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">Pausar</button>
             <button id="soundButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">🔊 Som: ON</button>
         </div>
-        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v6.9</div>
+        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v7.0</div>
     </div>
 </footer>
 
@@ -281,6 +280,7 @@ const mapNameDisplay = document.getElementById('mapNameDisplay');
 const mapSelectionContainer = document.getElementById('mapSelectionContainer');
 const soundFX = new SoundFX();
 
+// Mapas rigorosamente padronizados com 21 linhas e 19 colunas
 const mapsList = [
     {
         name: "Grid 1 (Cibernético)",
@@ -312,8 +312,8 @@ const mapsList = [
         name: "Núcleo 2",
         data: [
             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-            [1,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1],
-            [1,0,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,0,1],
+            [1,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,3,1],
+            [1,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,1,0,1],
             [1,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,1],
             [1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,1],
             [1,0,0,0,1,3,0,0,0,1,0,0,0,3,1,0,0,0,1],
@@ -353,6 +353,10 @@ const mapsList = [
             [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
             [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
             [1,3,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,3,1],
+            [1,0,1,1,0,1,1,0,1,1,1,0,1,1,0,1,1,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1],
+            [1,0,1,1,0,1,0,0,0,1,0,0,0,1,0,1,1,0,1],
             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
         ]
     }
@@ -1071,7 +1075,11 @@ function handleStartAction(e) {
     startLoop();
 }
 
-// Vinculação única usando pointerup para evitar conflitos de clique duplo no mobile
+// Eventos de seleção de mapa direto por pointerup
+document.getElementById('mapBtn0').onpointerup = (e) => { e.preventDefault(); selectMap(0); };
+document.getElementById('mapBtn1').onpointerup = (e) => { e.preventDefault(); selectMap(1); };
+document.getElementById('mapBtn2').onpointerup = (e) => { e.preventDefault(); selectMap(2); };
+
 startButton.onpointerup = handleStartAction;
 
 pauseButton.onpointerup = (e) => {
@@ -1132,12 +1140,6 @@ document.addEventListener('visibilitychange', () => {
         togglePause();
     }
 });
-
-function resizeCanvas() {
-    const maxWidth = Math.min(380, window.innerWidth - 24);
-    canvas.style.width = `${maxWidth}px`;
-    canvas.style.height = `${(maxWidth * HEIGHT) / WIDTH}px`;
-}
 
 window.addEventListener('resize', resizeCanvas);
 
