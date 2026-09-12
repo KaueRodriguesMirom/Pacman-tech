@@ -105,7 +105,7 @@ button {
             </div>
             <div>
                 <h1 class="font-arcade text-xs text-cyan-400 text-glow tracking-wider">PAC-MAN TECH</h1>
-                <p class="text-[9px] text-cyan-300/70">Cyber Arcade v6.4</p>
+                <p class="text-[9px] text-cyan-300/70">Cyber Arcade v6.5</p>
             </div>
         </div>
 
@@ -186,7 +186,7 @@ button {
             <button id="pauseButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">Pausar</button>
             <button id="soundButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">🔊 Som: ON</button>
         </div>
-        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v6.4</div>
+        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v6.5</div>
     </div>
 </footer>
 
@@ -980,9 +980,7 @@ function showOverlay(title, text, buttonText, showMapPicker = false) {
 function hideOverlay() {
     messageOverlay.style.opacity = '0';
     messageOverlay.style.pointerEvents = 'none';
-    setTimeout(() => {
-        messageOverlay.style.display = 'none';
-    }, 300);
+    messageOverlay.style.display = 'none';
 }
 
 function checkWin() {
