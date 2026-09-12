@@ -495,7 +495,7 @@ function createGhosts() {
 function resetPositions() {
     const midC = Math.floor(cols / 2);
     pacman.x = midC * TILE + TILE / 2;
-    pacman.y = (rows > 17 ? 16 : rows - 3) * TILE + TILE / 2;
+    pacman.y = (rows > 17 ? 16 : rows - 2) * TILE + TILE / 2;
     pacman.dir = { ...DIR.NONE };
     pacman.nextDir = { ...DIR.NONE };
     pacman.moveSoundCounter = 0;
