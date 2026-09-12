@@ -105,7 +105,7 @@ button {
             </div>
             <div>
                 <h1 class="font-arcade text-xs text-cyan-400 text-glow tracking-wider">PAC-MAN TECH</h1>
-                <p class="text-[9px] text-cyan-300/70">Cyber Arcade v6.1</p>
+                <p class="text-[9px] text-cyan-300/70">Cyber Arcade v6.2</p>
             </div>
         </div>
 
@@ -143,7 +143,7 @@ button {
             <div id="mapSelectionContainer" class="w-full flex flex-col gap-2 mb-4">
                 <div class="text-[9px] font-arcade text-cyan-300 uppercase text-left">Selecionar Mapa:</div>
                 <div class="grid grid-cols-3 gap-1.5">
-                    <button onclick="selectMap(0)" id="mapBtn0" class="py-2 px-1 bg-cyan-950/80 border border-cyan-400 rounded-lg text-[9px] font-arcade text-cyan-300 hover:bg-cyan-500 hover:text-black transition">Grid 1</button>
+                    <button onclick="selectMap(0)" id="mapBtn0" class="py-2 px-1 bg-cyan-950/80 border border-cyan-400 rounded-lg text-[9px] font-arcade text-cyan-300 transition shadow-md shadow-cyan-500/30">Grid 1</button>
                     <button onclick="selectMap(1)" id="mapBtn1" class="py-2 px-1 bg-[#030309] border border-cyan-500/40 rounded-lg text-[9px] font-arcade text-slate-400 hover:bg-cyan-500 hover:text-black transition">Núcleo 2</button>
                     <button onclick="selectMap(2)" id="mapBtn2" class="py-2 px-1 bg-[#030309] border border-cyan-500/40 rounded-lg text-[9px] font-arcade text-slate-400 hover:bg-cyan-500 hover:text-black transition">Servidor 3</button>
                 </div>
@@ -186,14 +186,11 @@ button {
             <button id="pauseButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">Pausar</button>
             <button id="soundButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">🔊 Som: ON</button>
         </div>
-        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v6.1</div>
+        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v6.2</div>
     </div>
 </footer>
 
 <script>
-/* =========================================================
-   SOM
-========================================================= */
 class SoundFX {
     constructor() {
         this.enabled = true;
@@ -264,9 +261,6 @@ class SoundFX {
     }
 }
 
-/* =========================================================
-   DOM & SETUP
-========================================================= */
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreDisplay = document.getElementById('scoreDisplay');
@@ -284,9 +278,6 @@ const soundButton = document.getElementById('soundButton');
 const mapNameDisplay = document.getElementById('mapNameDisplay');
 const soundFX = new SoundFX();
 
-/* =========================================================
-   MAPAS MÚLTIPLOS REFORMULADOS
-========================================================= */
 const mapsList = [
     {
         name: "Cibernético",
@@ -383,7 +374,7 @@ let lastTime = 0;
 
 function selectMap(index) {
     selectedMapIndex = index;
-    for(let i=0; i<3; i++) {
+    for(let i = 0; i < 3; i++) {
         const btn = document.getElementById(`mapBtn${i}`);
         if(i === index) {
             btn.className = "py-2 px-1 bg-cyan-950/80 border border-cyan-400 rounded-lg text-[9px] font-arcade text-cyan-300 transition shadow-md shadow-cyan-500/30";
@@ -392,11 +383,11 @@ function selectMap(index) {
         }
     }
     mapNameDisplay.innerText = mapsList[index].name;
+    resetMapConfig();
+    resizeCanvas();
+    draw();
 }
 
-/* =========================================================
-   RECORD
-========================================================= */
 function loadHighScore() {
     try {
         return Number(localStorage.getItem('pacman_tech_pro_highscore') || 0);
@@ -419,9 +410,6 @@ function updateHighScore() {
     }
 }
 
-/* =========================================================
-   DIREÇÕES & ENTIDADES
-========================================================= */
 const DIR = {
     UP: { x: 0, y: -1 },
     DOWN: { x: 0, y: 1 },
@@ -488,7 +476,7 @@ function resetMapConfig() {
 
 function resetPositions() {
     pacman.x = 9 * TILE + TILE / 2;
-    pacman.y = 16 * TILE + TILE / 2;
+    pacman.y = (rows > 17 ? 16 : rows - 4) * TILE + TILE / 2;
     pacman.dir = { ...DIR.NONE };
     pacman.nextDir = { ...DIR.NONE };
     pacman.moveSoundCounter = 0;
@@ -518,9 +506,6 @@ function updateUI() {
     }
 }
 
-/* =========================================================
-   GRID UTILS
-========================================================= */
 function tileCenter(c, r) {
     return { x: c * TILE + TILE / 2, y: r * TILE + TILE / 2 };
 }
@@ -561,9 +546,6 @@ function canMoveTo(x, y, radius) {
     return true;
 }
 
-/* =========================================================
-   CONTROLES PAC-MAN
-========================================================= */
 function setDirection(x, y) {
     soundFX.init();
     pacman.nextDir = { x, y };
@@ -661,9 +643,6 @@ function updatePacman(dt) {
     else if (pacman.x > WIDTH + TILE / 2) pacman.x = -TILE / 2;
 }
 
-/* =========================================================
-   IA DOS FANTASMAS
-========================================================= */
 function getAvailableGhostDirections(ghost, tile) {
     const dirs = [DIR.UP, DIR.DOWN, DIR.LEFT, DIR.RIGHT];
     return dirs.filter(dir => {
@@ -772,9 +751,6 @@ function updateGhost(ghost, dt) {
     else if (ghost.x > WIDTH + TILE / 2) ghost.x = -TILE / 2;
 }
 
-/* =========================================================
-   COLISÕES COM FANTASMAS
-========================================================= */
 function checkGhostCollision(ghost) {
     if (ghost.mode === 'house') return;
 
@@ -814,9 +790,6 @@ function checkGhostCollision(ghost) {
     }, 700);
 }
 
-/* =========================================================
-   UPDATE & DRAW GERAL
-========================================================= */
 function update(dt) {
     if (gameState !== 'PLAYING') return;
 
@@ -1054,6 +1027,10 @@ function togglePause() {
 
 startButton.addEventListener('click', () => {
     soundFX.init();
+    if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+        animationFrame = null;
+    }
     if (gameState === 'WIN') { 
         nextLevel(); 
         return; 
@@ -1065,7 +1042,6 @@ startButton.addEventListener('click', () => {
         startLoop();
         return;
     }
-    // Inicialização geral do jogo (Modo START ou GAMEOVER)
     initGame();
     gameState = 'PLAYING';
     statusDisplay.innerText = 'SISTEMA ONLINE';
@@ -1138,7 +1114,7 @@ function resizeCanvas() {
 
 window.addEventListener('resize', resizeCanvas);
 
-// Inicialização padrão da tela inicial
+// Inicialização imediata ao carregar a página
 resetMapConfig();
 resizeCanvas();
 draw();
@@ -1153,4 +1129,3 @@ showOverlay(
 
 </body>
 </html>
-
