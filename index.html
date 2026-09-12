@@ -106,7 +106,7 @@ button {
             </div>
             <div>
                 <h1 class="font-arcade text-xs text-cyan-400 text-glow tracking-wider">PAC-MAN TECH</h1>
-                <p class="text-[9px] text-cyan-300/70">Cyber Arcade v6.7</p>
+                <p class="text-[9px] text-cyan-300/70">Cyber Arcade v6.8</p>
             </div>
         </div>
 
@@ -129,7 +129,7 @@ button {
     </div>
 
     <div class="w-full flex items-center justify-between px-1">
-        <div class="text-[8px] text-slate-400 font-arcade">MAPA: <span id="mapNameDisplay" class="text-cyan-400">Cibernético</span></div>
+        <div class="text-[8px] text-slate-400 font-arcade">MAPA: <span id="mapNameDisplay" class="text-cyan-400">Grid 1 (Cibernético)</span></div>
         <div id="statusDisplay" class="text-[8px] text-cyan-400 font-arcade">SISTEMA ONLINE</div>
         <div class="text-[8px] text-slate-400 font-arcade">NODES: <span id="pelletsDisplay" class="text-cyan-400">0</span></div>
     </div>
@@ -187,7 +187,7 @@ button {
             <button id="pauseButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">Pausar</button>
             <button id="soundButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">🔊 Som: ON</button>
         </div>
-        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v6.7</div>
+        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v6.8</div>
     </div>
 </footer>
 
@@ -395,7 +395,6 @@ function resetMapConfig() {
 }
 
 function resizeCanvas() {
-    // Garante proporção correta sem quebrar o canvas
     const maxWidth = Math.min(380, window.innerWidth - 24);
     canvas.style.width = `${maxWidth}px`;
     canvas.style.height = `${(maxWidth * HEIGHT) / WIDTH}px`;
@@ -985,10 +984,14 @@ function showOverlay(title, text, buttonText, showMapPicker = false) {
     }
 
     messageOverlay.style.display = 'flex';
+    messageOverlay.style.visibility = 'visible';
+    messageOverlay.style.pointerEvents = 'auto';
 }
 
 function hideOverlay() {
+    messageOverlay.style.visibility = 'hidden';
     messageOverlay.style.display = 'none';
+    messageOverlay.style.pointerEvents = 'none';
 }
 
 function checkWin() {
@@ -1036,7 +1039,10 @@ function togglePause() {
 }
 
 function handleStartAction(e) {
-    if (e) e.preventDefault();
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
     soundFX.init();
     
     if (animationFrame) {
@@ -1147,3 +1153,4 @@ showOverlay(
 
 </body>
 </html>
+
