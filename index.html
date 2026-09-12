@@ -106,7 +106,7 @@ button {
             </div>
             <div>
                 <h1 class="font-arcade text-xs text-cyan-400 text-glow tracking-wider">PAC-MAN TECH</h1>
-                <p class="text-[9px] text-cyan-300/70">Cyber Arcade v6.8</p>
+                <p class="text-[9px] text-cyan-300/70">Cyber Arcade v6.9</p>
             </div>
         </div>
 
@@ -136,6 +136,7 @@ button {
 </header>
 
 <main class="w-full max-w-md flex flex-col items-center relative flex-grow justify-center my-1">
+    <!-- Overlay com display flex inicial e transição segura -->
     <div id="messageOverlay" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95 backdrop-blur-md rounded-2xl p-4">
         <div class="bg-[#0a0a16] border-2 border-[#00f2fe] p-4 rounded-2xl shadow-2xl flex flex-col items-center text-center max-w-xs arcade-glow w-full">
             <h2 id="overlayTitle" class="font-arcade text-sm text-cyan-400 mb-2 text-glow">PAC-MAN TECH</h2>
@@ -187,7 +188,7 @@ button {
             <button id="pauseButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">Pausar</button>
             <button id="soundButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">🔊 Som: ON</button>
         </div>
-        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v6.8</div>
+        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v6.9</div>
     </div>
 </footer>
 
@@ -989,8 +990,8 @@ function showOverlay(title, text, buttonText, showMapPicker = false) {
 }
 
 function hideOverlay() {
-    messageOverlay.style.visibility = 'hidden';
     messageOverlay.style.display = 'none';
+    messageOverlay.style.visibility = 'hidden';
     messageOverlay.style.pointerEvents = 'none';
 }
 
@@ -1070,15 +1071,17 @@ function handleStartAction(e) {
     startLoop();
 }
 
-startButton.onclick = handleStartAction;
-startButton.ontouchend = handleStartAction;
+// Vinculação única usando pointerup para evitar conflitos de clique duplo no mobile
+startButton.onpointerup = handleStartAction;
 
-pauseButton.onclick = () => {
+pauseButton.onpointerup = (e) => {
+    e.preventDefault();
     soundFX.init();
     togglePause();
 };
 
-soundButton.onclick = () => {
+soundButton.onpointerup = (e) => {
+    e.preventDefault();
     soundFX.enabled = !soundFX.enabled;
     if (soundFX.enabled) {
         soundFX.init();
@@ -1112,11 +1115,11 @@ function bindControl(id, x, y) {
     if (!button) return;
     const handler = event => {
         event.preventDefault();
+        event.stopPropagation();
         soundFX.init();
         setDirection(x, y);
     };
-    button.onclick = handler;
-    button.ontouchend = handler;
+    button.onpointerup = handler;
 }
 
 bindControl('btnUp', 0, -1);
@@ -1153,4 +1156,5 @@ showOverlay(
 
 </body>
 </html>
+
 
