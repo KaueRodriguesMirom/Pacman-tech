@@ -105,7 +105,7 @@ button {
             </div>
             <div>
                 <h1 class="font-arcade text-xs text-cyan-400 text-glow tracking-wider">PAC-MAN TECH</h1>
-                <p class="text-[9px] text-cyan-300/70">Cyber Arcade v6.3</p>
+                <p class="text-[9px] text-cyan-300/70">Cyber Arcade v6.4</p>
             </div>
         </div>
 
@@ -135,7 +135,7 @@ button {
 </header>
 
 <main class="w-full max-w-md flex flex-col items-center relative flex-grow justify-center my-1">
-    <div id="messageOverlay" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/92 backdrop-blur-md rounded-2xl transition-all duration-300 p-4">
+    <div id="messageOverlay" style="display: flex; opacity: 1; pointer-events: auto;" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/92 backdrop-blur-md rounded-2xl transition-all duration-300 p-4">
         <div class="bg-[#0a0a16] border-2 border-[#00f2fe] p-4 rounded-2xl shadow-2xl flex flex-col items-center text-center max-w-xs arcade-glow w-full">
             <h2 id="overlayTitle" class="font-arcade text-sm text-cyan-400 mb-2 text-glow">PAC-MAN TECH</h2>
             <p id="overlayText" class="text-slate-300 text-[11px] mb-4 leading-relaxed">Escolha seu mapa e nível de criptografia inicial:</p>
@@ -186,7 +186,7 @@ button {
             <button id="pauseButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">Pausar</button>
             <button id="soundButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">🔊 Som: ON</button>
         </div>
-        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v6.3</div>
+        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v6.4</div>
     </div>
 </footer>
 
@@ -972,9 +972,9 @@ function showOverlay(title, text, buttonText, showMapPicker = false) {
         mapSelectionContainer.style.display = 'none';
     }
 
+    messageOverlay.style.display = 'flex';
     messageOverlay.style.opacity = '1';
     messageOverlay.style.pointerEvents = 'auto';
-    messageOverlay.style.display = 'flex';
 }
 
 function hideOverlay() {
@@ -1029,12 +1029,15 @@ function togglePause() {
     }
 }
 
-startButton.addEventListener('click', () => {
+function handleStartAction(e) {
+    if (e) e.preventDefault();
     soundFX.init();
+    
     if (animationFrame) {
         cancelAnimationFrame(animationFrame);
         animationFrame = null;
     }
+
     if (gameState === 'WIN') { 
         nextLevel(); 
         return; 
@@ -1046,13 +1049,17 @@ startButton.addEventListener('click', () => {
         startLoop();
         return;
     }
+
     initGame();
     gameState = 'PLAYING';
     statusDisplay.innerText = 'SISTEMA ONLINE';
     hideOverlay();
     resizeCanvas();
     startLoop();
-});
+}
+
+startButton.addEventListener('click', handleStartAction);
+startButton.addEventListener('pointerdown', handleStartAction);
 
 pauseButton.addEventListener('click', () => {
     soundFX.init();
@@ -1133,4 +1140,3 @@ showOverlay(
 
 </body>
 </html>
-
