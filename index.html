@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-<title>Pac-Man Tech Pro - Arcade Edition</title>
+<title>Pac-Man Tech Pro - Cyber Arcade</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
 
@@ -71,22 +71,25 @@ button {
     touch-action: manipulation;
     -webkit-user-select: none;
     user-select: none;
+    background: linear-gradient(135deg, #0a0a16 0%, #030309 100%);
 }
 
 .control-button:active {
-    transform: scale(.94);
+    transform: scale(.92);
+    background: #00f2fe;
+    color: #000;
 }
 
 @media (max-height:700px) {
     header {
         transform: scale(.92);
         transform-origin: top center;
-        margin-bottom: -8px !important;
+        margin-bottom: -6px !important;
     }
     footer {
         transform: scale(.9);
         transform-origin: bottom center;
-        margin-top: -8px !important;
+        margin-top: -6px !important;
     }
 }
 </style>
@@ -94,7 +97,7 @@ button {
 
 <body class="min-h-screen flex flex-col items-center justify-between p-2 sm:p-4">
 
-<header class="w-full max-w-md flex flex-col items-center bg-[#0a0a16] border border-[#00f2fe]/40 rounded-2xl p-3 shadow-xl mb-2 gap-2.5">
+<header class="w-full max-w-md flex flex-col items-center bg-[#0a0a16] border border-[#00f2fe]/40 rounded-2xl p-3 shadow-xl mb-1.5 gap-2">
     <div class="flex items-center gap-3 w-full justify-between">
         <div class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg shadow-cyan-500/50">
@@ -102,11 +105,11 @@ button {
             </div>
             <div>
                 <h1 class="font-arcade text-xs text-cyan-400 text-glow tracking-wider">PAC-MAN TECH</h1>
-                <p class="text-[9px] text-cyan-300/70">Grid Cibernético v5.4</p>
+                <p class="text-[9px] text-cyan-300/70">Cyber Arcade v6.0</p>
             </div>
         </div>
 
-        <div class="flex items-center gap-2 bg-[#030309] px-3 py-1.5 rounded-xl border border-[#00f2fe]/30">
+        <div class="flex items-center gap-2 bg-[#030309] px-2.5 py-1.5 rounded-xl border border-[#00f2fe]/30">
             <div class="text-center">
                 <div class="text-[7px] uppercase font-semibold text-cyan-400 font-arcade">Pontos</div>
                 <div id="scoreDisplay" class="font-arcade text-xs text-white">0</div>
@@ -125,18 +128,28 @@ button {
     </div>
 
     <div class="w-full flex items-center justify-between px-1">
-        <div class="text-[8px] text-slate-500 font-arcade">NÍVEL <span id="levelDisplay" class="text-cyan-400">1</span></div>
+        <div class="text-[8px] text-slate-400 font-arcade">MAPA: <span id="mapNameDisplay" class="text-cyan-400">Cibernético</span></div>
         <div id="statusDisplay" class="text-[8px] text-cyan-400 font-arcade">SISTEMA ONLINE</div>
-        <div class="text-[8px] text-slate-500 font-arcade">NODES: <span id="pelletsDisplay" class="text-cyan-400">0</span></div>
+        <div class="text-[8px] text-slate-400 font-arcade">NODES: <span id="pelletsDisplay" class="text-cyan-400">0</span></div>
     </div>
 </header>
 
 <main class="w-full max-w-md flex flex-col items-center relative flex-grow justify-center my-1">
-    <div id="messageOverlay" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/90 backdrop-blur-md rounded-2xl transition-all duration-300">
-        <div class="bg-[#0a0a16] border-2 border-[#00f2fe] p-5 rounded-2xl shadow-2xl flex flex-col items-center text-center max-w-xs arcade-glow mx-4">
-            <h2 id="overlayTitle" class="font-arcade text-base text-cyan-400 mb-2.5 text-glow">PAC-MAN TECH</h2>
-            <p id="overlayText" class="text-slate-300 text-xs mb-5 leading-relaxed">Navegue pelo grid cibernético, colete os nodes e destrua os firewalls!</p>
-            <button id="startButton" class="w-full py-3 px-5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-arcade text-xs rounded-xl shadow-lg shadow-cyan-500/40 transform transition active:scale-95 cursor-pointer">
+    <div id="messageOverlay" class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-black/92 backdrop-blur-md rounded-2xl transition-all duration-300 p-4">
+        <div class="bg-[#0a0a16] border-2 border-[#00f2fe] p-4 rounded-2xl shadow-2xl flex flex-col items-center text-center max-w-xs arcade-glow w-full">
+            <h2 id="overlayTitle" class="font-arcade text-sm text-cyan-400 mb-2 text-glow">PAC-MAN TECH</h2>
+            <p id="overlayText" class="text-slate-300 text-[11px] mb-4 leading-relaxed">Escolha seu mapa e nível de criptografia inicial:</p>
+            
+            <div id="mapSelectionContainer" class="w-full flex flex-col gap-2 mb-4">
+                <div class="text-[9px] font-arcade text-cyan-300 uppercase text-left">Selecionar Mapa:</div>
+                <div class="grid grid-cols-3 gap-1.5">
+                    <button onclick="selectMap(0)" id="mapBtn0" class="py-2 px-1 bg-cyan-950/80 border border-cyan-400 rounded-lg text-[9px] font-arcade text-cyan-300 hover:bg-cyan-500 hover:text-black transition">Grid 1</button>
+                    <button onclick="selectMap(1)" id="mapBtn1" class="py-2 px-1 bg-[#030309] border border-cyan-500/40 rounded-lg text-[9px] font-arcade text-slate-400 hover:bg-cyan-500 hover:text-black transition">Núcleo 2</button>
+                    <button onclick="selectMap(2)" id="mapBtn2" class="py-2 px-1 bg-[#030309] border border-cyan-500/40 rounded-lg text-[9px] font-arcade text-slate-400 hover:bg-cyan-500 hover:text-black transition">Servidor 3</button>
+                </div>
+            </div>
+
+            <button id="startButton" class="w-full py-3 px-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-arcade text-xs rounded-xl shadow-lg shadow-cyan-500/40 transform transition active:scale-95 cursor-pointer">
                 INICIALIZAR SISTEMA
             </button>
         </div>
@@ -147,15 +160,23 @@ button {
     </div>
 </main>
 
-<footer class="w-full max-w-md mt-2 flex flex-col items-center justify-between gap-2 bg-[#0a0a16] border border-[#00f2fe]/40 rounded-2xl p-2.5 text-xs text-slate-400">
-    <div class="flex flex-col items-center justify-center w-full my-1">
+<footer class="w-full max-w-md mt-1.5 flex flex-col items-center justify-between gap-2 bg-[#0a0a16] border border-[#00f2fe]/40 rounded-2xl p-2.5 text-xs text-slate-400">
+    <div class="flex flex-col items-center justify-center w-full my-0.5">
         <div class="text-[8px] font-arcade text-cyan-400 mb-1.5 uppercase tracking-wider">Controles Direcionais</div>
         <div class="flex flex-col items-center w-full gap-1.5">
-            <button id="btnUp" class="control-button w-16 h-11 bg-[#030309] border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center active:bg-cyan-500 active:text-black text-xl font-bold shadow-md shadow-cyan-500/30">▲</button>
+            <button id="btnUp" class="control-button w-16 h-11 border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center text-lg font-bold shadow-md shadow-cyan-500/30">
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 4l-8 8h6v8h4v-8h6z"/></svg>
+            </button>
             <div class="flex items-center justify-center gap-6 w-full">
-                <button id="btnLeft" class="control-button w-20 h-11 bg-[#030309] border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center active:bg-cyan-500 active:text-black text-xl font-bold shadow-md shadow-cyan-500/30">◀</button>
-                <button id="btnDown" class="control-button w-16 h-11 bg-[#030309] border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center active:bg-cyan-500 active:text-black text-xl font-bold shadow-md shadow-cyan-500/30">▼</button>
-                <button id="btnRight" class="control-button w-20 h-11 bg-[#030309] border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center active:bg-cyan-500 active:text-black text-xl font-bold shadow-md shadow-cyan-500/30">▶</button>
+                <button id="btnLeft" class="control-button w-20 h-11 border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center text-lg font-bold shadow-md shadow-cyan-500/30">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M4 12l8-8v6h8v4h-8v6z"/></svg>
+                </button>
+                <button id="btnDown" class="control-button w-16 h-11 border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center text-lg font-bold shadow-md shadow-cyan-500/30">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 20l8-8h-6v-8h-4v8h-6z"/></svg>
+                </button>
+                <button id="btnRight" class="control-button w-20 h-11 border-2 border-cyan-400 rounded-xl text-cyan-300 flex items-center justify-center text-lg font-bold shadow-md shadow-cyan-500/30">
+                    <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M20 12l-8 8v-6h-8v-4h8v-6z"/></svg>
+                </button>
             </div>
         </div>
     </div>
@@ -165,13 +186,13 @@ button {
             <button id="pauseButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">Pausar</button>
             <button id="soundButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">🔊 Som: ON</button>
         </div>
-        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v5.4</div>
+        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v6.0</div>
     </div>
 </footer>
 
 <script>
 /* =========================================================
-   SOM
+   SOM (CORRIGIDO PARA DESBLOQUEIO DE AUDIO CONTEXT)
 ========================================================= */
 class SoundFX {
     constructor() {
@@ -194,20 +215,22 @@ class SoundFX {
         if (!this.enabled) return;
         this.init();
         if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        const oscillator = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        oscillator.type = type;
-        oscillator.frequency.setValueAtTime(start, now);
-        if (start !== end) {
-            oscillator.frequency.exponentialRampToValueAtTime(Math.max(1, end), now + duration);
-        }
-        gain.gain.setValueAtTime(volume, now);
-        gain.gain.exponentialRampToValueAtTime(.001, now + duration);
-        oscillator.connect(gain);
-        gain.connect(this.ctx.destination);
-        oscillator.start(now);
-        oscillator.stop(now + duration);
+        try {
+            const now = this.ctx.currentTime;
+            const oscillator = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            oscillator.type = type;
+            oscillator.frequency.setValueAtTime(start, now);
+            if (start !== end) {
+                oscillator.frequency.exponentialRampToValueAtTime(Math.max(1, end), now + duration);
+            }
+            gain.gain.setValueAtTime(volume, now);
+            gain.gain.exponentialRampToValueAtTime(.001, now + duration);
+            oscillator.connect(gain);
+            gain.connect(this.ctx.destination);
+            oscillator.start(now);
+            oscillator.stop(now + duration);
+        } catch(e) {}
     }
     pellet() { this.tone('square', 620, 920, .055, .055); }
     power() { this.tone('square', 300, 900, .18, .10); }
@@ -242,7 +265,7 @@ class SoundFX {
 }
 
 /* =========================================================
-   DOM
+   DOM & SETUP
 ========================================================= */
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -258,48 +281,97 @@ const overlayText = document.getElementById('overlayText');
 const startButton = document.getElementById('startButton');
 const pauseButton = document.getElementById('pauseButton');
 const soundButton = document.getElementById('soundButton');
+const mapNameDisplay = document.getElementById('mapNameDisplay');
 const soundFX = new SoundFX();
 
 /* =========================================================
-   MAPA
+   MAPAS MÚLTIPLOS REFORMULADOS
 ========================================================= */
-const initialMap = [
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-    [1,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,3,1],
-    [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
-    [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
-    [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-    [1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1],
-    [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
-    [1,1,1,1,0,1,1,1,2,1,2,1,1,1,0,1,1,1,1],
-    [2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2],
-    [1,1,1,1,0,1,2,1,1,4,1,1,2,1,0,1,1,1,1],
-    [2,2,2,2,0,2,2,1,2,2,2,1,2,2,0,2,2,2,2],
-    [1,1,1,1,0,1,2,1,1,1,1,1,2,1,0,1,1,1,1],
-    [2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2],
-    [1,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1],
-    [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
-    [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
-    [1,3,0,1,0,0,0,0,0,2,0,0,0,0,0,1,0,3,1],
-    [1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1],
-    [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
-    [1,0,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,0,1],
-    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+const mapsList = [
+    {
+        name: "Cibernético",
+        data: [
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,3,1],
+            [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+            [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1],
+            [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+            [1,1,1,1,0,1,1,1,2,1,2,1,1,1,0,1,1,1,1],
+            [2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2],
+            [1,1,1,1,0,1,2,1,1,4,1,1,2,1,0,1,1,1,1],
+            [2,2,2,2,0,2,2,1,2,2,2,1,2,2,0,2,2,2,2],
+            [1,1,1,1,0,1,2,1,1,1,1,1,2,1,0,1,1,1,1],
+            [2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2],
+            [1,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1],
+            [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+            [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+            [1,3,0,1,0,0,0,0,0,2,0,0,0,0,0,1,0,3,1],
+            [1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1],
+            [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+            [1,0,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,0,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+        ]
+    },
+    {
+        name: "Núcleo Central",
+        data: [
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1],
+            [1,0,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,0,1],
+            [1,0,1,0,0,0,0,0,0,1,0,0,0,0,0,0,1,0,1],
+            [1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,1],
+            [1,0,0,0,1,3,0,0,0,1,0,0,0,3,1,0,0,0,1],
+            [1,1,1,0,1,1,1,1,0,1,0,1,1,1,1,0,1,1,1],
+            [2,2,1,0,0,0,0,0,0,2,0,0,0,0,0,0,1,2,2],
+            [2,2,1,0,1,1,1,0,1,2,1,0,1,1,1,0,1,2,2],
+            [1,1,1,0,1,2,2,2,1,4,1,2,2,2,1,0,1,1,1],
+            [2,2,2,0,1,2,1,2,2,2,2,2,1,2,1,0,2,2,2],
+            [1,1,1,0,1,2,1,1,1,1,1,1,1,2,1,0,1,1,1],
+            [2,2,1,0,1,2,2,2,2,2,2,2,2,2,1,0,1,2,2],
+            [1,1,1,0,1,1,1,1,0,1,0,1,1,1,1,0,1,1,1],
+            [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+            [1,0,1,1,1,0,1,1,0,1,0,1,1,0,1,1,1,0,1],
+            [1,3,0,0,1,0,0,0,0,2,0,0,0,0,1,0,0,3,1],
+            [1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,1,1],
+            [1,0,0,0,0,0,1,0,0,1,0,0,1,0,0,0,0,0,1],
+            [1,0,1,1,1,1,1,1,0,1,0,1,1,1,1,1,1,0,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+        ]
+    },
+    {
+        name: "Servidor Web",
+        data: [
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+            [1,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,3,1],
+            [1,0,1,1,0,1,1,0,1,1,1,0,1,1,0,1,1,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1],
+            [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+            [1,1,1,1,0,1,1,1,2,1,2,1,1,1,0,1,1,1,1],
+            [2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2],
+            [1,1,1,1,0,1,2,1,1,4,1,1,2,1,0,1,1,1,1],
+            [2,2,2,2,0,2,2,1,2,2,2,1,2,2,0,2,2,2,2],
+            [1,1,1,1,0,1,2,1,1,1,1,1,2,1,0,1,1,1,1],
+            [2,2,2,1,0,1,2,2,2,2,2,2,2,1,0,1,2,2,2],
+            [1,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1],
+            [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+            [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+            [1,3,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,3,1],
+            [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+        ].slice(0, 21) // Garante tamanho padrão se necessário
+    }
 ];
 
-const rows = initialMap.length;
-const cols = initialMap[0].length;
-const TILE = 20;
-const WIDTH = cols * TILE;
-const HEIGHT = rows * TILE;
-
-canvas.width = WIDTH;
-canvas.height = HEIGHT;
-
-/* =========================================================
-   ESTADO
-========================================================= */
+let selectedMapIndex = 0;
 let map = [];
+let rows = 0;
+let cols = 0;
+const TILE = 20;
+let WIDTH = 0;
+let HEIGHT = 0;
+
 let score = 0;
 let level = 1;
 let lives = 3;
@@ -308,6 +380,19 @@ let powerTimer = 0;
 let gameState = 'START';
 let animationFrame = null;
 let lastTime = 0;
+
+function selectMap(index) {
+    selectedMapIndex = index;
+    for(let i=0; i<3; i++) {
+        const btn = document.getElementById(`mapBtn${i}`);
+        if(i === index) {
+            btn.className = "py-2 px-1 bg-cyan-950/80 border border-cyan-400 rounded-lg text-[9px] font-arcade text-cyan-300 transition shadow-md shadow-cyan-500/30";
+        } else {
+            btn.className = "py-2 px-1 bg-[#030309] border border-cyan-500/40 rounded-lg text-[9px] font-arcade text-slate-400 hover:bg-cyan-500 hover:text-black transition";
+        }
+    }
+    mapNameDisplay.innerText = mapsList[index].name;
+}
 
 /* =========================================================
    RECORD
@@ -335,7 +420,7 @@ function updateHighScore() {
 }
 
 /* =========================================================
-   DIREÇÕES
+   DIREÇÕES & ENTIDADES
 ========================================================= */
 const DIR = {
     UP: { x: 0, y: -1 },
@@ -345,12 +430,8 @@ const DIR = {
     NONE: { x: 0, y: 0 }
 };
 
-/* =========================================================
-   PAC-MAN
-========================================================= */
 const pacman = {
-    x: 9 * TILE + TILE / 2,
-    y: 16 * TILE + TILE / 2,
+    x: 0, y: 0,
     dir: { x: 0, y: 0 },
     nextDir: { x: 0, y: 0 },
     speed: 2.1,
@@ -360,9 +441,6 @@ const pacman = {
     moveSoundCounter: 0
 };
 
-/* =========================================================
-   FANTASMAS
-========================================================= */
 const ghostDefinitions = [
     { color: '#ef4444', startX: 9, startY: 9, delay: 0 },
     { color: '#ec4899', startX: 9, startY: 9, delay: 900 },
@@ -373,7 +451,6 @@ let ghosts = [];
 
 function createGhosts() {
     ghosts = ghostDefinitions.map((definition, idx) => {
-        // Distribui perfeitamente os 4 fantasmas dentro da casa (espaçados sem sobrepor)
         const offsetsX = [-6, 6, -3, 3];
         const position = tileCenter(definition.startX, definition.startY);
         return {
@@ -389,8 +466,16 @@ function createGhosts() {
     });
 }
 
-function resetMap() {
-    map = initialMap.map(row => [...row]);
+function resetMapConfig() {
+    const activeMap = mapsList[selectedMapIndex].data;
+    map = activeMap.map(row => [...row]);
+    rows = map.length;
+    cols = map[0].length;
+    WIDTH = cols * TILE;
+    HEIGHT = rows * TILE;
+    canvas.width = WIDTH;
+    canvas.height = HEIGHT;
+
     pelletsLeft = 0;
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < cols; c++) {
@@ -415,7 +500,7 @@ function initGame() {
     lives = 3;
     level = 1;
     powerTimer = 0;
-    resetMap();
+    resetMapConfig();
     resetPositions();
     updateUI();
 }
@@ -477,11 +562,11 @@ function canMoveTo(x, y, radius) {
 }
 
 /* =========================================================
-   CONTROLE PAC-MAN
+   CONTROLES PAC-MAN
 ========================================================= */
 function setDirection(x, y) {
-    pacman.nextDir = { x, y };
     soundFX.init();
+    pacman.nextDir = { x, y };
 
     if (oppositeDirection(pacman.nextDir, pacman.dir)) {
         pacman.dir = { ...pacman.nextDir };
@@ -631,13 +716,11 @@ function updateGhostHouse(ghost, dt) {
 
     if (ghost.houseTimer > 0) {
         ghost.houseTimer -= dt;
-        // Movimento flutuante suave e seguro dentro do perímetro da casa sem colisões de parede
         ghost.y = house.y + Math.sin(performance.now() * 0.005 + ghost.startX) * 3;
         ghost.dir = { x: 0, y: 0 };
         return;
     }
 
-    // Move-se de forma direta para a saída da casa (9,8)
     const dx = exit.x - ghost.x;
     const dy = exit.y - ghost.y;
     const distance = Math.hypot(dx, dy);
@@ -649,7 +732,6 @@ function updateGhostHouse(ghost, dt) {
         return;
     }
 
-    // Chegou na saída
     ghost.x = exit.x;
     ghost.y = exit.y;
     ghost.dir = { ...DIR.LEFT };
@@ -691,10 +773,10 @@ function updateGhost(ghost, dt) {
 }
 
 /* =========================================================
-   COLISÃO COM FANTASMAS
+   COLISÕES COM FANTASMAS
 ========================================================= */
 function checkGhostCollision(ghost) {
-    if (ghost.mode === 'house') return; // Ignora colisões enquanto estão na base
+    if (ghost.mode === 'house') return;
 
     const distance = Math.hypot(pacman.x - ghost.x, pacman.y - ghost.y);
     if (distance > TILE * .72) return;
@@ -905,10 +987,18 @@ function startLoop() {
     }
 }
 
-function showOverlay(title, text, button) {
+function showOverlay(title, text, buttonText, showMapPicker = false) {
     overlayTitle.innerText = title;
     overlayText.innerText = text;
-    startButton.innerText = button;
+    startButton.innerText = buttonText;
+    
+    const mapPicker = document.getElementById('mapSelectionContainer');
+    if (showMapPicker) {
+        mapPicker.classList.remove('hidden');
+    } else {
+        mapPicker.classList.add('hidden');
+    }
+
     messageOverlay.classList.remove('opacity-0', 'pointer-events-none');
     messageOverlay.classList.add('opacity-100', 'pointer-events-auto');
 }
@@ -924,12 +1014,12 @@ function checkWin() {
     gameState = 'WIN';
     statusDisplay.innerText = 'GRID PURIFICADO';
     soundFX.win();
-    showOverlay('SISTEMA LIMPO', `Todos os nodes foram coletados! Pontuação: ${score}`, 'PRÓXIMO NÍVEL');
+    showOverlay('SISTEMA LIMPO', `Todos os nodes coletados! Pontuação: ${score}`, 'PRÓXIMO NÍVEL');
 }
 
 function nextLevel() {
     level++;
-    resetMap();
+    resetMapConfig();
     powerTimer = 0;
     resetPositions();
     gameState = 'PLAYING';
@@ -944,7 +1034,7 @@ function gameOver() {
     updateHighScore();
     statusDisplay.innerText = 'SISTEMA COMPROMETIDO';
     soundFX.death();
-    showOverlay('FALHA DE SEGURANÇA', `Os firewalls capturaram o Pac-Man! Pontuação: ${score}`, 'TENTAR NOVAMENTE');
+    showOverlay('FALHA DE SEGURANÇA', `Os firewalls capturaram o Pac-Man! Pontuação: ${score}`, 'TENTAR NOVAMENTE', true);
 }
 
 function togglePause() {
@@ -964,7 +1054,10 @@ function togglePause() {
 
 startButton.addEventListener('click', () => {
     soundFX.init();
-    if (gameState === 'WIN') { nextLevel(); return; }
+    if (gameState === 'WIN') { 
+        nextLevel(); 
+        return; 
+    }
     if (gameState === 'PAUSED') {
         gameState = 'PLAYING';
         statusDisplay.innerText = 'SISTEMA ONLINE';
@@ -1018,6 +1111,7 @@ function bindControl(id, x, y) {
     if (!button) return;
     const handler = event => {
         event.preventDefault();
+        soundFX.init();
         setDirection(x, y);
     };
     button.addEventListener('pointerdown', handler);
@@ -1042,16 +1136,19 @@ function resizeCanvas() {
 
 window.addEventListener('resize', resizeCanvas);
 
-initGame();
+// Inicialização de exibição
+resetMapConfig();
 resizeCanvas();
 draw();
 
 showOverlay(
     'PAC-MAN TECH',
-    'Colete todos os nodes, use as setas ou WASD e fuja dos firewalls. Base dos fantasmas ajustada.',
-    'INICIALIZAR SISTEMA'
+    'Selecione seu mapa cibernético e inicie o sistema:',
+    'INICIALIZAR SISTEMA',
+    true
 );
 </script>
 
 </body>
 </html>
+
