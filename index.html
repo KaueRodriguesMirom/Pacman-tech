@@ -102,7 +102,7 @@ button {
             </div>
             <div>
                 <h1 class="font-arcade text-xs text-cyan-400 text-glow tracking-wider">PAC-MAN TECH</h1>
-                <p class="text-[9px] text-cyan-300/70">Grid Cibernético v5.3</p>
+                <p class="text-[9px] text-cyan-300/70">Grid Cibernético v5.4</p>
             </div>
         </div>
 
@@ -165,7 +165,7 @@ button {
             <button id="pauseButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">Pausar</button>
             <button id="soundButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">🔊 Som: ON</button>
         </div>
-        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v5.3</div>
+        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v5.4</div>
     </div>
 </footer>
 
@@ -373,11 +373,11 @@ let ghosts = [];
 
 function createGhosts() {
     ghosts = ghostDefinitions.map((definition, idx) => {
-        // Espalha um pouco as posições iniciais dentro da casa para não fundirem/bugarem
-        const offsetX = (idx % 2 === 0 ? -1 : 1) * (idx * 2);
+        // Distribui perfeitamente os 4 fantasmas dentro da casa (espaçados sem sobrepor)
+        const offsetsX = [-6, 6, -3, 3];
         const position = tileCenter(definition.startX, definition.startY);
         return {
-            x: position.x + offsetX,
+            x: position.x + offsetsX[idx],
             y: position.y,
             color: definition.color,
             dir: { x: 0, y: -1 },
@@ -533,12 +533,10 @@ function updatePacman(dt) {
     const speed = pacman.speed * dt;
 
     if (validTile(tile.r, tile.c)) {
-        // Se houver uma direção solicitada, verifica se pode virar livremente em qualquer ponto próximo ao centro
         if (pacman.nextDir.x !== 0 || pacman.nextDir.y !== 0) {
             if (oppositeDirection(pacman.nextDir, pacman.dir)) {
                 pacman.dir = { ...pacman.nextDir };
             } else if (canGoFromTile(tile.c, tile.r, pacman.nextDir)) {
-                // Alinha o eixo oposto para permitir conversões suaves sem travar
                 if (pacman.nextDir.x !== 0 && Math.abs(pacman.y - center.y) <= speed * 1.5) {
                     pacman.y = center.y;
                     pacman.dir = { ...pacman.nextDir };
@@ -633,13 +631,13 @@ function updateGhostHouse(ghost, dt) {
 
     if (ghost.houseTimer > 0) {
         ghost.houseTimer -= dt;
-        // Movimento flutuante seguro dentro da casa
-        ghost.y = house.y + Math.sin(performance.now() * 0.005) * 4;
+        // Movimento flutuante suave e seguro dentro do perímetro da casa sem colisões de parede
+        ghost.y = house.y + Math.sin(performance.now() * 0.005 + ghost.startX) * 3;
         ghost.dir = { x: 0, y: 0 };
         return;
     }
 
-    // Movimento direto para a saída da casa (9,8)
+    // Move-se de forma direta para a saída da casa (9,8)
     const dx = exit.x - ghost.x;
     const dy = exit.y - ghost.y;
     const distance = Math.hypot(dx, dy);
@@ -696,6 +694,8 @@ function updateGhost(ghost, dt) {
    COLISÃO COM FANTASMAS
 ========================================================= */
 function checkGhostCollision(ghost) {
+    if (ghost.mode === 'house') return; // Ignora colisões enquanto estão na base
+
     const distance = Math.hypot(pacman.x - ghost.x, pacman.y - ghost.y);
     if (distance > TILE * .72) return;
 
@@ -1048,7 +1048,7 @@ draw();
 
 showOverlay(
     'PAC-MAN TECH',
-    'Colete todos os nodes, use as setas ou WASD e fuja dos firewalls. Movimentação contínua e bugs da base corrigidos.',
+    'Colete todos os nodes, use as setas ou WASD e fuja dos firewalls. Base dos fantasmas ajustada.',
     'INICIALIZAR SISTEMA'
 );
 </script>
