@@ -105,7 +105,7 @@ button {
             </div>
             <div>
                 <h1 class="font-arcade text-xs text-cyan-400 text-glow tracking-wider">PAC-MAN TECH</h1>
-                <p class="text-[9px] text-cyan-300/70">Cyber Arcade v6.2</p>
+                <p class="text-[9px] text-cyan-300/70">Cyber Arcade v6.3</p>
             </div>
         </div>
 
@@ -186,7 +186,7 @@ button {
             <button id="pauseButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">Pausar</button>
             <button id="soundButton" class="px-3 py-1.5 bg-[#030309] hover:bg-cyan-950/50 border border-cyan-500/50 rounded-xl text-cyan-300 font-semibold transition text-[11px]">🔊 Som: ON</button>
         </div>
-        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v6.2</div>
+        <div class="text-[9px] text-cyan-400/80 font-arcade">PAC-MAN TECH v6.3</div>
     </div>
 </footer>
 
@@ -276,6 +276,7 @@ const startButton = document.getElementById('startButton');
 const pauseButton = document.getElementById('pauseButton');
 const soundButton = document.getElementById('soundButton');
 const mapNameDisplay = document.getElementById('mapNameDisplay');
+const mapSelectionContainer = document.getElementById('mapSelectionContainer');
 const soundFX = new SoundFX();
 
 const mapsList = [
@@ -965,20 +966,23 @@ function showOverlay(title, text, buttonText, showMapPicker = false) {
     overlayText.innerText = text;
     startButton.innerText = buttonText;
     
-    const mapPicker = document.getElementById('mapSelectionContainer');
     if (showMapPicker) {
-        mapPicker.classList.remove('hidden');
+        mapSelectionContainer.style.display = 'flex';
     } else {
-        mapPicker.classList.add('hidden');
+        mapSelectionContainer.style.display = 'none';
     }
 
-    messageOverlay.classList.remove('opacity-0', 'pointer-events-none');
-    messageOverlay.classList.add('opacity-100', 'pointer-events-auto');
+    messageOverlay.style.opacity = '1';
+    messageOverlay.style.pointerEvents = 'auto';
+    messageOverlay.style.display = 'flex';
 }
 
 function hideOverlay() {
-    messageOverlay.classList.remove('opacity-100', 'pointer-events-auto');
-    messageOverlay.classList.add('opacity-0', 'pointer-events-none');
+    messageOverlay.style.opacity = '0';
+    messageOverlay.style.pointerEvents = 'none';
+    setTimeout(() => {
+        messageOverlay.style.display = 'none';
+    }, 300);
 }
 
 function checkWin() {
@@ -1129,3 +1133,4 @@ showOverlay(
 
 </body>
 </html>
+
